@@ -97,7 +97,7 @@ export default function SecurityTestPage() {
             Database Security Test
           </h1>
           <p className="mt-2 text-sm text-slate-500">
-            Check authenticated user access to MalishaEdu database tables.
+            Check authenticated user access to Edunexio database tables.
           </p>
         </div>
 

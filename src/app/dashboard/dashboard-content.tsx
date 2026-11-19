@@ -360,11 +360,11 @@ export default function DashboardContent() {
       <aside className={`fixed inset-y-0 left-0 z-50 flex w-[265px] flex-col border-r border-slate-100 bg-white transition-transform duration-300 lg:translate-x-0 ${mobileMenu ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="flex h-[82px] items-center gap-3 border-b border-slate-100 px-6">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 text-xl font-bold text-white shadow-lg shadow-blue-200">
-            M
+            E
           </div>
           <div>
             <h1 className="text-xl font-bold text-slate-800">
-              Malisha<span className="text-blue-600">Edu</span>
+              Edunex<span className="text-blue-600">io</span>
             </h1>
             <p className="text-[10px] font-semibold uppercase tracking-[2px] text-slate-400">
               Management System
@@ -437,7 +437,7 @@ export default function DashboardContent() {
           <div className="rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
             <div className="flex items-center gap-2">
               <span className="text-lg">✦</span>
-              <span className="text-xs font-bold text-blue-800">MalishaEdu System</span>
+              <span className="text-xs font-bold text-blue-800">Edunexio System</span>
             </div>
             <p className="mt-2 text-[11px] leading-5 text-slate-500">
               Student Application Management Platform
@@ -572,7 +572,7 @@ export default function DashboardContent() {
           )}
 
           <footer className="mt-8 flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 pt-5 text-xs text-slate-400">
-            <p>© {new Date().getFullYear()} MalishaEdu. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} Edunexio. All rights reserved.</p>
             <p>Student Application Management System</p>
           </footer>
         </main>

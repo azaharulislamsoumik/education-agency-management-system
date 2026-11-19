@@ -53,7 +53,7 @@ export default function Home() {
 
           <div className="mb-10">
             <h1 className="text-3xl font-bold text-gray-900">
-              MalishaEdu
+                Edunex<span className="text-blue-600">io</span>
             </h1>
 
             <p className="text-sm text-gray-500 mt-2">
@@ -161,7 +161,7 @@ export default function Home() {
           </form>
 
           <p className="text-xs text-gray-400 text-center mt-10">
-            © 2026 MalishaEdu. All rights reserved.
+            © 2026 Edunexio. All rights reserved.
           </p>
         </div>
 
@@ -171,7 +171,7 @@ export default function Home() {
           <div className="max-w-md">
             <div className="mb-8">
               <div className="w-16 h-16 rounded-2xl bg-white/15 flex items-center justify-center text-3xl font-bold">
-                M
+                E
               </div>
             </div>
 
