@@ -1,6 +1,6 @@
 "use client";
 
-import UniversityModule from "../university-module";
+import UniversityModule from "@/features/university/university-details/university-module";
 
 export default function UniversityDetailsPage() {
   return (

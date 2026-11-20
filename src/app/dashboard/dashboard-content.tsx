@@ -1,11 +1,11 @@
 
 "use client";
 
-import StudentModule from "./students/student-module";
+import StudentModule from "@/features/students/student-module";
 import { useMemo, useState } from "react";
-import BoardModule from "../board/board-module";
-import UniversityModule from "./university/university-module";
-import OffersModule from "./university/offers/offers-module";
+import BoardModule from "@/features/board/board-module";
+import UniversityModule from "@/features/university/university-details/university-module";
+import OffersModule from "@/features/university/offers/offers-module";
 
 type MenuItem = {
   label: string;

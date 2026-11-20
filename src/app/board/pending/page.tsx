@@ -1,7 +1,7 @@
 
 "use client";
 
-import BoardModule from "../board-module";
+import BoardModule from "@/features/board/board-module";
 
 export default function PendingPage() {
   return (
