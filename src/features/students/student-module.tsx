@@ -156,6 +156,7 @@ export default function StudentModule() {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [signatureFile, setSignatureFile] = useState<File | null>(null);
   const [documentFiles, setDocumentFiles] = useState<Record<string, File[]>>({});
+  const passportScanInputRef = useRef<HTMLInputElement | null>(null);
 
   const [photoUrl, setPhotoUrl] = useState("");
   const [signatureUrl, setSignatureUrl] = useState("");
@@ -274,6 +275,10 @@ export default function StudentModule() {
           { count: "exact" }
         )
         .order("created_at", { ascending: false });
+        // Agent can only view their own assigned students
+if (employee?.role === "agent") {
+  query = query.eq("agent_name", employee.full_name);
+}
 
       if (matchingStudentIds) query = query.in("id", matchingStudentIds);
       if (f.studentName.trim()) query = query.ilike("full_name", `%${f.studentName.trim()}%`);
@@ -397,6 +402,31 @@ export default function StudentModule() {
 
   function updateField(key: string, value: any) {
     setStudent((old: any) => ({ ...old, [key]: value }));
+  }
+
+  function scanPassport(file?: File) {
+    if (!file) {
+      passportScanInputRef.current?.click();
+      return;
+    }
+
+    // Selection only: queue the passport for the existing document upload flow.
+    // OCR/API/cloud processing is intentionally disabled for now.
+    setDocumentFiles((old) => {
+      const current = old.Passports || [];
+      const alreadyQueued = current.some(
+        (item) =>
+          item.name === file.name &&
+          item.size === file.size &&
+          item.lastModified === file.lastModified
+      );
+
+      return alreadyQueued
+        ? old
+        : { ...old, Passports: [...current, file] };
+    });
+
+    setMessage("Passport file selected. Save the student form to upload it.");
   }
 
   function openNewStudent() {
@@ -1291,7 +1321,7 @@ export default function StudentModule() {
             Upload Photo
             <input
               type="file"
-              accept="image/*"
+              accept="image/*,.pdf,application/pdf"
               className="hidden"
               onChange={(e) =>
                 setPhotoFile(e.target.files?.[0] || null)
@@ -1324,7 +1354,7 @@ export default function StudentModule() {
             Upload Signature
             <input
               type="file"
-              accept="image/*"
+              accept="image/*,.pdf,application/pdf"
               className="hidden"
               onChange={(e) =>
                 setSignatureFile(e.target.files?.[0] || null)
@@ -1407,6 +1437,29 @@ export default function StudentModule() {
                       }}
                     />
                   </label>
+                )}
+
+                {!readOnly && category === "Passports" && (
+                  <>
+                    <input
+                      ref={passportScanInputRef}
+                      type="file"
+                      accept="image/*,.pdf,application/pdf"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) void scanPassport(file);
+                        e.currentTarget.value = "";
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => scanPassport()}
+                      className="mt-1 w-full rounded-sm border border-blue-300 bg-blue-50 px-1 py-1.5 text-[9px] font-semibold text-blue-700 hover:bg-blue-100 disabled:cursor-wait disabled:opacity-60"
+                    >
+                      {"Scan Passport"}
+                    </button>
+                  </>
                 )}
 
                 {(documentFiles[category] || []).map((file, i) => (
