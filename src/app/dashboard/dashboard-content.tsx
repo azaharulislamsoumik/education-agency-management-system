@@ -2,7 +2,7 @@
 "use client";
 
 import StudentModule from "@/features/students/student-module";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import BoardModule from "@/features/board/board-module";
 import UniversityModule from "@/features/university/university-details/university-module";
 import OffersModule from "@/features/university/offers/offers-module";
@@ -319,28 +319,84 @@ export default function DashboardContent() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [studentModuleKey, setStudentModuleKey] = useState(0);
 
+  // Restore the selected page from the URL after refresh.
+  useEffect(() => {
+    function syncNavigationFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      const requestedModule = params.get("module") || "Dashboard";
+      const requestedChild = params.get("child") || "";
 
+      const menu = menuItems.find(
+        (item) => item.label === requestedModule
+      );
 
-  function toggleMenu(name: string) {
-  setExpandedMenus((previous) =>
-    previous.includes(name) ? [] : [name]
-  );
-}
+      const validModule = menu ? requestedModule : "Dashboard";
+      const validChild =
+        menu?.children?.includes(requestedChild) ? requestedChild : "";
 
-  function selectModule(label: string) {
-  setActiveModule(label);
-  setActiveChild("");
+      setActiveModule(validModule);
+      setActiveChild(validChild);
+      setExpandedMenus(validChild ? [validModule] : []);
+    }
 
-  if (label === "Students") {
-    setStudentModuleKey((key) => key + 1);
+    syncNavigationFromUrl();
+
+    window.addEventListener("popstate", syncNavigationFromUrl);
+
+    return () => {
+      window.removeEventListener("popstate", syncNavigationFromUrl);
+    };
+  }, []);
+
+  // Keep the browser URL synchronized with the selected page.
+  function updateNavigationUrl(module: string, child = "") {
+    const url = new URL(window.location.href);
+
+    if (module === "Dashboard") {
+      url.searchParams.delete("module");
+      url.searchParams.delete("child");
+    } else {
+      url.searchParams.set("module", module);
+
+      if (child) {
+        url.searchParams.set("child", child);
+      } else {
+        url.searchParams.delete("child");
+      }
+    }
+
+    window.history.pushState(
+      {},
+      "",
+      `${url.pathname}${url.search}${url.hash}`
+    );
   }
 
-  setMobileMenu(false);
+  function toggleMenu(name: string) {
+    setExpandedMenus((previous) =>
+      previous.includes(name) ? [] : [name]
+    );
+  }
+
+  function selectModule(label: string) {
+    updateNavigationUrl(label);
+
+    setActiveModule(label);
+    setActiveChild("");
+
+    if (label === "Students") {
+      setStudentModuleKey((key) => key + 1);
+    }
+
+    setMobileMenu(false);
   }
 
   function selectChild(parent: string, child: string) {
+    updateNavigationUrl(parent, child);
+
     setActiveModule(parent);
     setActiveChild(child);
+    setExpandedMenus([parent]);
     setMobileMenu(false);
   }
 
