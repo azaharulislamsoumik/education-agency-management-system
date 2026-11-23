@@ -1289,11 +1289,31 @@ export default function UniversityModule() {
               </button>
             </div>
 
-            {/* Autofill protection */}
-            <div
-              autoComplete="off"
-              className="grid grid-cols-1 gap-4 md:grid-cols-2"
-            >
+           
+{/* Autofill protection */}
+<div
+  autoComplete="off"
+  className="grid grid-cols-1 gap-4 md:grid-cols-2"
+>
+  {/* Hidden decoy fields to absorb browser autofill */}
+  <div
+    aria-hidden="true"
+    className="absolute -left-[9999px] h-0 w-0 overflow-hidden"
+  >
+    <input
+      type="text"
+      name="username"
+      autoComplete="username"
+      tabIndex={-1}
+    />
+    <input
+      type="password"
+      name="password"
+      autoComplete="current-password"
+      tabIndex={-1}
+    />
+  </div>
+
               {renderField(
                 "University Name *",
                 "university_name",
