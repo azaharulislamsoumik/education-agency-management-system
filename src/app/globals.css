@@ -25,7 +25,8 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Supabase-style zoom-responsive data tables */
+/* MalishaEdu - Responsive Auto Size Tables */
+
 div.overflow-x-auto:has(> table) {
   display: block;
   width: 100%;
@@ -39,11 +40,16 @@ div.overflow-x-auto:has(> table) {
 
 div.overflow-x-auto:has(> table) > table {
   width: max-content !important;
+  min-width: 100%;
   max-width: none;
   table-layout: auto;
 }
 
-div.overflow-x-auto:has(> table) > table th,
+div.overflow-x-auto:has(> table) > table th {
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
 div.overflow-x-auto:has(> table) > table td {
   vertical-align: middle;
 }
