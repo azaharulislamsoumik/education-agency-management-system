@@ -1398,7 +1398,7 @@ placeholder="Enter university portal password"
 className={inputClass}
                     style={{
   WebkitTextSecurity: showFormPassword ? "none" : "disc",
-}}
+} as any}
                   />
 
                   <button
