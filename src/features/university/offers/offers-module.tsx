@@ -141,7 +141,7 @@ function ListCell({ title, value }: { title: string; value: string | null }) {
         type="button"
         onClick={() => setOpen(true)}
         disabled={!items.length}
-        className="min-w-[145px] max-w-[230px] text-left disabled:cursor-default"
+       className="max-w-[200px] text-left disabled:cursor-default"
         title={items.length ? `View ${title}` : "No information"}
       >
         {items.length ? (
@@ -616,7 +616,7 @@ export default function OffersModule() {
           </div>
         ) : (
           <div className="w-full overflow-x-auto rounded-lg border border-slate-200">
-            <table className="w-full min-w-[2500px] border-collapse text-left text-sm">
+            <table className="w-max min-w-full table-auto border-collapse text-left text-sm">
               <thead className="bg-slate-100">
                 <tr>
                   {["S.N.", "University Name", "Province", "Intake", "Degree", "TeachingType", "Duration", "Programs", "Scholarship/Tuition Types", "Tuition Fees Details", "Requirements", "Status", "Deadline", "Actions"].map((column) => (
@@ -630,7 +630,11 @@ export default function OffersModule() {
                   return (
                     <tr key={offer.id} className="align-top transition hover:bg-blue-50/40">
                       <td className="border-b border-r border-slate-100 px-3 py-3 text-xs text-slate-500">{index + 1}</td>
-                      <td className="min-w-[220px] border-b border-r border-slate-100 px-3 py-3 font-semibold text-slate-800">{university?.university_name || "University not found"}</td>
+                      <td className="max-w-[260px] border-b border-r border-slate-100 px-3 py-3 font-semibold text-slate-800">
+  <span className="block break-words">
+    {university?.university_name || "University not found"}
+  </span>
+</td>
                       <td className="border-b border-r border-slate-100 px-3 py-3 text-sm text-slate-600">{offer.province || university?.province || "—"}</td>
                       <td className="border-b border-r border-slate-100 px-3 py-3 text-sm text-slate-600">{offer.intake || "—"}</td>
                       <td className="border-b border-r border-slate-100 px-3 py-3 text-sm font-medium text-slate-700">{offer.degree || "—"}</td>
@@ -645,7 +649,7 @@ export default function OffersModule() {
                       </td>
                       <td className="whitespace-nowrap border-b border-r border-slate-100 px-3 py-3 text-sm text-slate-600">{formatDate(offer.deadline)}</td>
                       <td className="border-b border-slate-100 px-3 py-3">
-                        <div className="flex min-w-[170px] flex-wrap gap-1.5">
+                        <div className="flex w-max flex-nowrap items-center gap-1.5 whitespace-nowrap">
                           <button type="button" onClick={() => void openNotes(offer)} className="rounded-md border border-amber-200 bg-amber-50 px-2 py-1.5 text-[11px] font-semibold text-amber-700 hover:bg-amber-100">Note</button>
                           <button type="button" onClick={() => void openLogs(offer)} className="rounded-md border border-violet-200 bg-violet-50 px-2 py-1.5 text-[11px] font-semibold text-violet-700 hover:bg-violet-100">Log</button>
                           <button type="button" onClick={() => startEdit(offer)} className="rounded-md border border-blue-200 bg-blue-50 px-2 py-1.5 text-[11px] font-semibold text-blue-700 hover:bg-blue-100">Edit</button>
