@@ -1,4 +1,4 @@
-// Replace the existing displayList helper with:
+
 function displayList(value: string[] | null | undefined) {
   const items = value || [];
 
@@ -15,36 +15,37 @@ function displayList(value: string[] | null | undefined) {
   );
 }
 
-// Replace the existing University table block with:
 <div className="w-full overflow-x-auto rounded-lg border border-slate-200">
   <table className="w-max min-w-full table-auto border-collapse text-left text-sm">
     <thead className="bg-slate-100">
       <tr>
-        {columns.map((column) => (
-          <th
-            key={column}
-            className="whitespace-nowrap border-b border-r border-slate-200 px-3 py-3 text-xs font-bold text-slate-700"
-          >
-            {column}
-          </th>
-        ))}
+        <th className="whitespace-nowrap border-b border-r border-slate-200 px-3 py-3 text-xs font-bold text-slate-700">S.N.</th>
+        <th className="whitespace-nowrap border-b border-r border-slate-200 px-3 py-3 text-xs font-bold text-slate-700">University Name</th>
+        <th className="whitespace-nowrap border-b border-r border-slate-200 px-3 py-3 text-xs font-bold text-slate-700">Province</th>
+        <th className="whitespace-nowrap border-b border-r border-slate-200 px-3 py-3 text-xs font-bold text-slate-700">Intake</th>
+        <th className="whitespace-nowrap border-b border-r border-slate-200 px-3 py-3 text-xs font-bold text-slate-700">Degree</th>
+        <th className="whitespace-nowrap border-b border-r border-slate-200 px-3 py-3 text-xs font-bold text-slate-700">Tuition Fee</th>
+        <th className="whitespace-nowrap border-b border-r border-slate-200 px-3 py-3 text-xs font-bold text-slate-700">Type</th>
+        <th className="whitespace-nowrap border-b border-r border-slate-200 px-3 py-3 text-xs font-bold text-slate-700">Scholarship</th>
+        <th className="whitespace-nowrap border-b border-r border-slate-200 px-3 py-3 text-xs font-bold text-slate-700">Requirements</th>
+        <th className="whitespace-nowrap border-b border-r border-slate-200 px-3 py-3 text-xs font-bold text-slate-700">Restricted Account Country</th>
+        <th className="whitespace-nowrap border-b border-r border-slate-200 px-3 py-3 text-xs font-bold text-slate-700">Apply Link</th>
+        <th className="whitespace-nowrap border-b border-r border-slate-200 px-3 py-3 text-xs font-bold text-slate-700">User ID</th>
+        <th className="whitespace-nowrap border-b border-r border-slate-200 px-3 py-3 text-xs font-bold text-slate-700">Responsible Person</th>
+        <th className="whitespace-nowrap border-b border-r border-slate-200 px-3 py-3 text-xs font-bold text-slate-700">Password</th>
+        <th className="whitespace-nowrap border-b border-slate-200 px-3 py-3 text-xs font-bold text-slate-700">Actions</th>
       </tr>
     </thead>
 
     <tbody>
       {filteredUniversities.map((university, index) => (
-        <tr
-          key={university.id}
-          className="align-top hover:bg-blue-50/40"
-        >
+        <tr key={university.id} className="align-top hover:bg-blue-50/40">
           <td className="whitespace-nowrap border-b border-r border-slate-100 px-3 py-3 text-slate-600">
             {index + 1}
           </td>
 
           <td className="max-w-[280px] break-words border-b border-r border-slate-100 px-3 py-3 font-semibold text-slate-800">
-            <span className="block break-words">
-              {university.university_name}
-            </span>
+            {university.university_name}
           </td>
 
           <td className="max-w-[180px] whitespace-normal break-words border-b border-r border-slate-100 px-3 py-3">
@@ -89,9 +90,7 @@ function displayList(value: string[] | null | undefined) {
               >
                 Open Link ↗
               </a>
-            ) : (
-              "—"
-            )}
+            ) : "—"}
           </td>
 
           <td className="max-w-[220px] whitespace-normal break-words border-b border-r border-slate-100 px-3 py-3">
