@@ -324,20 +324,28 @@ export default function BoardModule({ statusFilter = "" }: { statusFilter?: stri
         <div className="overflow-x-auto">
           <table className="w-max min-w-full table-auto border-collapse text-center text-[10px] text-slate-700">
             <thead className="bg-indigo-50 text-slate-800"><tr>
-              {["S.N.", "Student Name", "Passport", "Nationality", "Email", "Intake", "University", "Degree", "Program", "Payment", "Agent", "Responsible Person", "Action"].map(h => <th key={h} className="border border-slate-200 px-2 py-2.5 font-bold">{h}</th>)}
+              {["S.N.", "Student Name", "Passport", "Nationality", "Email", "Intake", "University", "Degree", "Program", "Payment", "Agent", "Responsible Person", "Action"].map(h => <th key={h} className="whitespace-nowrap border border-slate-200 px-2 py-2.5 font-bold">{h}</th>)}
             </tr></thead>
             <tbody>
               {loading && <tr><td colSpan={13} className="py-8 text-slate-400">Loading applications...</td></tr>}
               {!loading && visibleRows.map((a, i) => <tr key={a.id} className={`h-9 transition-colors hover:bg-indigo-50 ${a.priority === "High" ? "bg-rose-50 text-rose-700" : a.priority === "Medium" ? "bg-amber-50/50" : "odd:bg-white even:bg-slate-50"}`}>
                 <td className="border border-slate-200 px-1.5 py-1">{(page - 1) * pageSize + i + 1}</td>
-                <td className="border border-slate-200 px-1.5 py-1 font-semibold">{a.student?.full_name || "—"}</td>
+                <td className="max-w-[240px] break-words border border-slate-200 px-1.5 py-1 font-semibold">
+  <span className="block break-words">{a.student?.full_name || "—"}</span>
+</td>
                 <td className="border border-slate-200 px-1.5 py-1">{a.student?.passport_number || "—"}</td>
                 <td className="border border-slate-200 px-1.5 py-1">{a.student?.nationality || "—"}</td>
-                <td className="border border-slate-200 px-1.5 py-1">{a.student?.email || "—"}</td>
+                <td className="max-w-[220px] whitespace-normal break-words border border-slate-200 px-1.5 py-1">
+  {a.student?.email || "—"}
+</td>
                 <td className="border border-slate-200 px-1.5 py-1">{a.intake || "—"}</td>
-                <td className="border border-slate-200 px-1.5 py-1">{a.university_name || "—"}</td>
+                <<td className="max-w-[220px] whitespace-normal break-words border border-slate-200 px-1.5 py-1">
+  {a.university_name || "—"}
+</td>
                 <td className="border border-slate-200 px-1.5 py-1">{a.degree_level || "—"}</td>
-                <td className="border border-slate-200 px-1.5 py-1">{a.program_name || "—"}</td>
+                <td className="max-w-[200px] whitespace-normal break-words border border-slate-200 px-1.5 py-1">
+  {a.program_name || "—"}
+</td>
                 <td className="border border-slate-200 px-1.5 py-1"><select value={a.payment || ""} onChange={e => void updateApplication(a.id, "payment", e.target.value)} className="w-full bg-transparent"><option value="">—</option>{PAYMENT_OPTIONS.map(x => <option key={x}>{x}</option>)}</select></td>
                 <td className="border border-slate-200 px-1.5 py-1">{a.student?.agent_name || "—"}</td>
                 <td className="border border-slate-200 px-1.5 py-1">{a.responsible_person || "—"}</td>
