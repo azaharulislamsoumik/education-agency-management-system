@@ -25,7 +25,7 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Responsive layout for all system data tables */
+/* Supabase-style zoom-responsive data tables */
 div.overflow-x-auto:has(> table) {
   display: block;
   width: 100%;
@@ -38,15 +38,12 @@ div.overflow-x-auto:has(> table) {
 }
 
 div.overflow-x-auto:has(> table) > table {
-  width: 100% !important;
-  min-width: 100% !important;
+  width: max-content !important;
   max-width: none;
   table-layout: auto;
 }
 
 div.overflow-x-auto:has(> table) > table th,
 div.overflow-x-auto:has(> table) > table td {
-  min-width: 0 !important;
-  overflow-wrap: anywhere;
-  vertical-align: top;
+  vertical-align: middle;
 }
