@@ -616,7 +616,7 @@ export default function OffersModule() {
           </div>
         ) : (
           <div className="w-full overflow-x-auto rounded-lg border border-slate-200">
-            <table className="w-max min-w-full table-auto border-collapse text-left text-sm">
+            <table className="w-full min-w-full table-auto border-collapse text-left text-sm">
               <thead className="bg-slate-100">
                 <tr>
                   {["S.N.", "University Name", "Province", "Intake", "Degree", "TeachingType", "Duration", "Programs", "Scholarship/Tuition Types", "Tuition Fees Details", "Requirements", "Status", "Deadline", "Actions"].map((column) => (
@@ -630,8 +630,8 @@ export default function OffersModule() {
                   return (
                     <tr key={offer.id} className="align-top transition hover:bg-blue-50/40">
                       <td className="border-b border-r border-slate-100 px-3 py-3 text-xs text-slate-500">{index + 1}</td>
-                      <td className="max-w-[260px] border-b border-r border-slate-100 px-3 py-3 font-semibold text-slate-800">
-  <span className="block break-words">
+                      <td className="w-[220px] max-w-[260px] border-b border-r border-slate-100 px-3 py-3 font-semibold text-slate-800">
+  <span className="block whitespace-normal break-words">
     {university?.university_name || "University not found"}
   </span>
 </td>
