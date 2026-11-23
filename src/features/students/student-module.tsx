@@ -1596,7 +1596,7 @@ if (employee?.role === "agent") {
 
           <div className="overflow-x-auto">
             <table className="w-max min-w-full table-auto border-collapse text-left text-sm">
-              <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+              <thead className="whitespace-nowrap px-3 py-3 font-semibold">
                 <tr>
                   {[
                     "S.N.", "Student Name", "Passport", "Nationality",
@@ -1623,9 +1623,11 @@ if (employee?.role === "agent") {
                     <td className="px-3 py-3">
                       {(page - 1) * pageSize + index + 1}
                     </td>
-                    <td className="px-3 py-3 font-medium">
-                      {s.full_name}
-                    </td>
+                    <td className="max-w-[280px] px-3 py-3 font-medium">
+  <span className="block break-words">
+    {s.full_name}
+  </span>
+</td>
                     <td className="px-3 py-3">
                       {s.passport_number || "—"}
                     </td>
@@ -1637,9 +1639,15 @@ if (employee?.role === "agent") {
                     </td>
                     <td className="px-3 py-3">{s.email || "—"}</td>
                     <td className="px-3 py-3">{s.phone || "—"}</td>
-                    <td className="px-3 py-3">{s.intake || "—"}</td>
-                    <td className="px-3 py-3">{s.degree || "—"}</td>
-                    <td className="px-3 py-3">{s.current_status || "—"}</td>
+                    <td className="max-w-[180px] whitespace-normal break-words px-3 py-3">
+  {s.intake || "—"}
+</td>
+                  <td className="max-w-[180px] whitespace-normal break-words px-3 py-3">
+  {s.degree || "—"}
+</td>
+                   <td className="max-w-[180px] whitespace-normal break-words px-3 py-3">
+  {s.current_status || "—"}
+</td>
                     <td className="px-3 py-3">{s.receiving_date || "—"}</td>
                     <td className="px-3 py-3">{s.agent_name || "—"}</td>
                     <td className="px-3 py-3">
