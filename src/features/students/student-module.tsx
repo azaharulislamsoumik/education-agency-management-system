@@ -1595,7 +1595,7 @@ if (employee?.role === "agent") {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[1500px] text-left text-sm">
+            <table className="w-max min-w-full table-auto border-collapse text-left text-sm">
               <thead className="bg-slate-50 text-xs uppercase text-slate-500">
                 <tr>
                   {[
