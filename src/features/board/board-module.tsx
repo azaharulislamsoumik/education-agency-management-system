@@ -339,7 +339,7 @@ export default function BoardModule({ statusFilter = "" }: { statusFilter?: stri
   {a.student?.email || "—"}
 </td>
                 <td className="border border-slate-200 px-1.5 py-1">{a.intake || "—"}</td>
-                <<td className="max-w-[220px] whitespace-normal break-words border border-slate-200 px-1.5 py-1">
+                <td className="max-w-[220px] whitespace-normal break-words border border-slate-200 px-1.5 py-1">
   {a.university_name || "—"}
 </td>
                 <td className="border border-slate-200 px-1.5 py-1">{a.degree_level || "—"}</td>
