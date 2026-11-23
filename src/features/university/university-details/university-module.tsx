@@ -1387,14 +1387,16 @@ export default function UniversityModule() {
                 <div className="flex gap-2">
                   <input
                     type={showFormPassword ? "text" : "password"}
-                    name="university-portal-password"
-                    autoComplete="new-password"
-                    data-lpignore="true"
-                    data-1p-ignore="true"
-                    value={form.password}
-                    onChange={(e) => updateForm("password", e.target.value)}
-                    placeholder="Enter university portal password"
-                    className={inputClass}
+              name="uni-portal-secret-field"
+autoComplete="off"
+spellCheck={false}
+data-lpignore="true"
+data-1p-ignore="true"
+data-bwignore="true"
+value={form.password}
+onChange={(e) => updateForm("password", e.target.value)}
+placeholder="Enter university portal password"
+className={inputClass}
                   />
 
                   <button
