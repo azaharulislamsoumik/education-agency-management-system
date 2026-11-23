@@ -1385,7 +1385,7 @@ export default function UniversityModule() {
 
                 <div className="flex gap-2">
                   <input
-                    type={showFormPassword ? "text" : "password"}
+                    type="text"
               name="uni-portal-secret-field"
 autoComplete="off"
 spellCheck={false}
@@ -1396,6 +1396,9 @@ value={form.password}
 onChange={(e) => updateForm("password", e.target.value)}
 placeholder="Enter university portal password"
 className={inputClass}
+                    style={{
+  WebkitTextSecurity: showFormPassword ? "none" : "disc",
+}}
                   />
 
                   <button
