@@ -550,7 +550,7 @@ export default function DashboardContent() {
           </div>
         </header>
 
-        <main className="mx-auto max-w-[1600px] p-4 sm:p-6 lg:p-8">
+        <main className="w-full min-w-0 max-w-none p-3 sm:p-4 lg:p-5">
           {isDashboard ? (
             <div className="space-y-7">
 
