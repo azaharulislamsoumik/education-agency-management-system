@@ -1292,7 +1292,6 @@ export default function UniversityModule() {
            
 {/* Autofill protection */}
 <div
-  autoComplete="off"
   className="grid grid-cols-1 gap-4 md:grid-cols-2"
 >
   {/* Hidden decoy fields to absorb browser autofill */}
