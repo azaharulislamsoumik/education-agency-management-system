@@ -101,12 +101,17 @@ function textToList(value: string) {
 function displayList(value: string[] | null | undefined) {
   const items = value || [];
 
-  if (!items.length) return <span className="text-slate-400">—</span>;
+  if (!items.length) {
+    return <span className="text-slate-400">—</span>;
+  }
 
   return (
-    <ul className="min-w-[100px] list-disc space-y-1 pl-4">
+    <ul className="min-w-0 list-disc space-y-1 pl-4">
       {items.map((item, index) => (
-        <li key={`${item}-${index}`} className="whitespace-normal">
+        <li
+          key={`${item}-${index}`}
+          className="whitespace-normal break-words"
+        >
           {item}
         </li>
       ))}
@@ -260,6 +265,7 @@ export default function UniversityModule() {
   const [universities, setUniversities] = useState<University[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
   const [openFilterDropdown, setOpenFilterDropdown] = useState<string | null>(
     null
   );
@@ -284,6 +290,7 @@ export default function UniversityModule() {
   const [noteText, setNoteText] = useState("");
   const [notes, setNotes] = useState<UniversityNote[]>([]);
   const [showNotes, setShowNotes] = useState(false);
+
   const [logUniversity, setLogUniversity] = useState<University | null>(null);
   const [logs, setLogs] = useState<UniversityLog[]>([]);
   const [showLogs, setShowLogs] = useState(false);
@@ -369,17 +376,28 @@ export default function UniversityModule() {
     return universities.filter((u) => {
       const nameMatch =
         !keyword || u.university_name.toLowerCase().includes(keyword);
+
       const provinceMatch = !provinceFilter || u.province === provinceFilter;
+
       const intakeMatch =
-        !intakeFilter.length || intakeFilter.some((v) => (u.intake || []).includes(v));
+        !intakeFilter.length ||
+        intakeFilter.some((v) => (u.intake || []).includes(v));
+
       const degreeMatch =
-        !degreeFilter.length || degreeFilter.some((v) => (u.degree || []).includes(v));
+        !degreeFilter.length ||
+        degreeFilter.some((v) => (u.degree || []).includes(v));
+
       const tuitionMatch =
-        !tuitionFilter.length || tuitionFilter.some((v) => (u.tuition_fee_type || []).includes(v));
+        !tuitionFilter.length ||
+        tuitionFilter.some((v) => (u.tuition_fee_type || []).includes(v));
+
       const scholarshipMatch =
-        !scholarshipFilter.length || scholarshipFilter.some((v) => (u.scholarship || []).includes(v));
+        !scholarshipFilter.length ||
+        scholarshipFilter.some((v) => (u.scholarship || []).includes(v));
+
       const requirementsMatch =
-        !requirementsFilter.length || requirementsFilter.some((v) => (u.requirements || []).includes(v));
+        !requirementsFilter.length ||
+        requirementsFilter.some((v) => (u.requirements || []).includes(v));
 
       const countryExcluded =
         !restrictedCountryFilter ||
@@ -1105,13 +1123,13 @@ export default function UniversityModule() {
           </p>
         ) : (
           <div className="w-full overflow-x-auto rounded-lg border border-slate-200">
-            <table className="w-full min-w-[2300px] border-collapse text-left text-sm">
+            <table className="w-max min-w-full table-auto border-collapse text-left text-sm">
               <thead className="bg-slate-100">
                 <tr>
                   {columns.map((column) => (
                     <th
                       key={column}
-                      className="border-b border-r border-slate-200 px-3 py-3 text-xs font-bold text-slate-700"
+                      className="whitespace-nowrap border-b border-r border-slate-200 px-3 py-3 text-xs font-bold text-slate-700"
                     >
                       {column}
                     </th>
@@ -1125,47 +1143,49 @@ export default function UniversityModule() {
                     key={university.id}
                     className="align-top hover:bg-blue-50/40"
                   >
-                    <td className="border-b border-r border-slate-100 px-3 py-3 text-slate-600">
+                    <td className="whitespace-nowrap border-b border-r border-slate-100 px-3 py-3 text-slate-600">
                       {index + 1}
                     </td>
 
-                    <td className="min-w-[210px] border-b border-r border-slate-100 px-3 py-3 font-semibold text-slate-800">
-                      {university.university_name}
+                    <td className="max-w-[280px] break-words border-b border-r border-slate-100 px-3 py-3 font-semibold text-slate-800">
+                      <span className="block whitespace-normal break-words">
+                        {university.university_name}
+                      </span>
                     </td>
 
-                    <td className="min-w-[130px] border-b border-r border-slate-100 px-3 py-3">
+                    <td className="max-w-[180px] whitespace-normal break-words border-b border-r border-slate-100 px-3 py-3">
                       {university.province || "—"}
                     </td>
 
-                    <td className="min-w-[150px] border-b border-r border-slate-100 px-3 py-3">
+                    <td className="max-w-[180px] whitespace-normal break-words border-b border-r border-slate-100 px-3 py-3">
                       {displayList(university.intake)}
                     </td>
 
-                    <td className="min-w-[130px] border-b border-r border-slate-100 px-3 py-3">
+                    <td className="max-w-[180px] whitespace-normal break-words border-b border-r border-slate-100 px-3 py-3">
                       {displayList(university.degree)}
                     </td>
 
-                    <td className="min-w-[160px] border-b border-r border-slate-100 px-3 py-3">
+                    <td className="max-w-[200px] whitespace-normal break-words border-b border-r border-slate-100 px-3 py-3">
                       {displayList(university.tuition_fee_type)}
                     </td>
 
-                    <td className="min-w-[130px] border-b border-r border-slate-100 px-3 py-3">
+                    <td className="max-w-[180px] whitespace-normal break-words border-b border-r border-slate-100 px-3 py-3">
                       {university.type || "—"}
                     </td>
 
-                    <td className="min-w-[150px] border-b border-r border-slate-100 px-3 py-3">
+                    <td className="max-w-[200px] whitespace-normal break-words border-b border-r border-slate-100 px-3 py-3">
                       {displayList(university.scholarship)}
                     </td>
 
-                    <td className="min-w-[180px] border-b border-r border-slate-100 px-3 py-3">
+                    <td className="max-w-[220px] whitespace-normal break-words border-b border-r border-slate-100 px-3 py-3">
                       {displayList(university.requirements)}
                     </td>
 
-                    <td className="min-w-[190px] border-b border-r border-slate-100 px-3 py-3">
+                    <td className="max-w-[220px] whitespace-normal break-words border-b border-r border-slate-100 px-3 py-3">
                       {displayList(university.restricted_account_country)}
                     </td>
 
-                    <td className="min-w-[140px] border-b border-r border-slate-100 px-3 py-3">
+                    <td className="max-w-[220px] whitespace-normal break-words border-b border-r border-slate-100 px-3 py-3">
                       {university.apply_link ? (
                         <a
                           href={university.apply_link}
@@ -1180,23 +1200,23 @@ export default function UniversityModule() {
                       )}
                     </td>
 
-                    <td className="min-w-[130px] border-b border-r border-slate-100 px-3 py-3">
+                    <td className="max-w-[220px] whitespace-normal break-words border-b border-r border-slate-100 px-3 py-3">
                       {university.user_id || "—"}
                     </td>
 
-                    <td className="min-w-[150px] border-b border-r border-slate-100 px-3 py-3">
+                    <td className="max-w-[200px] whitespace-normal break-words border-b border-r border-slate-100 px-3 py-3">
                       {university.responsible_person || "—"}
                     </td>
 
-                    <td className="min-w-[170px] border-b border-r border-slate-100 px-3 py-3">
+                    <td className="whitespace-nowrap border-b border-r border-slate-100 px-3 py-3">
                       <div className="space-y-2">
-                        <div className="break-all font-semibold tracking-wide text-slate-700">
+                        <div className="max-w-[180px] break-all font-semibold tracking-wide text-slate-700">
                           {passwordVisibility[university.id]
                             ? passwordCache[university.id] || ""
                             : "••••••••"}
                         </div>
 
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-nowrap gap-2">
                           <button
                             type="button"
                             onClick={() =>
@@ -1228,8 +1248,8 @@ export default function UniversityModule() {
                       </div>
                     </td>
 
-                    <td className="min-w-[190px] border-b border-slate-100 px-3 py-3">
-                      <div className="flex flex-wrap gap-2">
+                    <td className="whitespace-nowrap border-b border-slate-100 px-3 py-3">
+                      <div className="flex flex-nowrap items-center gap-2">
                         <button
                           onClick={() => openNotes(university)}
                           className="rounded bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700 hover:bg-amber-100"
@@ -1289,29 +1309,26 @@ export default function UniversityModule() {
               </button>
             </div>
 
-           
-{/* Autofill protection */}
-<div
-  className="grid grid-cols-1 gap-4 md:grid-cols-2"
->
-  {/* Hidden decoy fields to absorb browser autofill */}
-  <div
-    aria-hidden="true"
-    className="absolute -left-[9999px] h-0 w-0 overflow-hidden"
-  >
-    <input
-      type="text"
-      name="username"
-      autoComplete="username"
-      tabIndex={-1}
-    />
-    <input
-      type="password"
-      name="password"
-      autoComplete="current-password"
-      tabIndex={-1}
-    />
-  </div>
+            {/* Autofill protection */}
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {/* Hidden decoy fields to absorb browser autofill */}
+              <div
+                aria-hidden="true"
+                className="absolute -left-[9999px] h-0 w-0 overflow-hidden"
+              >
+                <input
+                  type="text"
+                  name="username"
+                  autoComplete="username"
+                  tabIndex={-1}
+                />
+                <input
+                  type="password"
+                  name="password"
+                  autoComplete="current-password"
+                  tabIndex={-1}
+                />
+              </div>
 
               {renderField(
                 "University Name *",
@@ -1386,19 +1403,19 @@ export default function UniversityModule() {
                 <div className="flex gap-2">
                   <input
                     type="text"
-              name="uni-portal-secret-field"
-autoComplete="off"
-spellCheck={false}
-data-lpignore="true"
-data-1p-ignore="true"
-data-bwignore="true"
-value={form.password}
-onChange={(e) => updateForm("password", e.target.value)}
-placeholder="Enter university portal password"
-className={inputClass}
+                    name="uni-portal-secret-field"
+                    autoComplete="off"
+                    spellCheck={false}
+                    data-lpignore="true"
+                    data-1p-ignore="true"
+                    data-bwignore="true"
+                    value={form.password}
+                    onChange={(e) => updateForm("password", e.target.value)}
+                    placeholder="Enter university portal password"
+                    className={inputClass}
                     style={{
-  WebkitTextSecurity: showFormPassword ? "none" : "disc",
-}}
+                      WebkitTextSecurity: showFormPassword ? "none" : "disc",
+                    }}
                   />
 
                   <button
