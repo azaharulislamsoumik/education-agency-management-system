@@ -322,7 +322,8 @@ export default function BoardModule({ statusFilter = "" }: { statusFilter?: stri
 
       <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-max min-w-full table-auto border-collapse text-center text-[10px] text-slate-700">
+         
+         <table className="w-max min-w-full table-auto border-collapse text-center text-sm text-slate-700">
             <thead className="bg-indigo-50 text-slate-800"><tr>
               {["S.N.", "Student Name", "Passport", "Nationality", "Email", "Intake", "University", "Degree", "Program", "Payment", "Agent", "Responsible Person", "Action"].map(h => <th key={h} className="whitespace-nowrap border border-slate-200 px-2 py-2.5 font-bold">{h}</th>)}
             </tr></thead>
