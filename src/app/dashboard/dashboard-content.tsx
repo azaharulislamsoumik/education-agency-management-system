@@ -378,18 +378,19 @@ export default function DashboardContent() {
     );
   }
 
-  function selectModule(label: string) {
-    updateNavigationUrl(label);
+function selectModule(label: string) {
+  updateNavigationUrl(label);
 
-    setActiveModule(label);
-    setActiveChild("");
+  setActiveModule(label);
+  setActiveChild("");
+  setExpandedMenus([]);
 
-    if (label === "Students") {
-      setStudentModuleKey((key) => key + 1);
-    }
-
-    setMobileMenu(false);
+  if (label === "Students") {
+    setStudentModuleKey((key) => key + 1);
   }
+
+  setMobileMenu(false);
+}
 
   function selectChild(parent: string, child: string) {
     updateNavigationUrl(parent, child);
