@@ -1402,7 +1402,7 @@ export default function UniversityModule() {
 
                 <div className="flex gap-2">
                   <input
-                    type="text"
+  type={showFormPassword ? "text" : "password"}
                     name="uni-portal-secret-field"
                     autoComplete="off"
                     spellCheck={false}

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { supabase } from "@/lib/supabase";
+import { APPLICATION_STATUSES } from "@/lib/application-statuses";
 
 const DOCUMENT_CATEGORIES = [
   "Passports", "Visa", "Certificates", "Transcripts",
@@ -132,6 +133,10 @@ export default function StudentModule() {
   const [students, setStudents] = useState<any[]>([]);
   const [agents, setAgents] = useState<any[]>([]);
   const [employee, setEmployee] = useState<any>(null);
+  const [filterAgents, setFilterAgents] = useState<any[]>([]);
+  const [nationalityOptions, setNationalityOptions] = useState<string[]>([]);
+  const [intakeOptions, setIntakeOptions] = useState<string[]>([]);
+  const [degreeOptions, setDegreeOptions] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [listLoading, setListLoading] = useState(false);
   const [totalStudents, setTotalStudents] = useState(0);
@@ -200,6 +205,83 @@ export default function StudentModule() {
 
       setEmployee(emp || null);
 
+      // Load Nationality options from student records visible under Supabase RLS.
+      const nationalityRows: any[] = [];
+
+      for (let from = 0; ; from += 1000) {
+        const { data, error } = await supabase
+          .from("students")
+          .select("nationality")
+          .not("nationality", "is", null)
+          .order("created_at", { ascending: true })
+          .range(from, from + 999);
+
+        if (error) {
+          console.error("Nationality loading error:", error.message);
+          break;
+        }
+
+        nationalityRows.push(...(data || []));
+        if (!data || data.length < 1000) break;
+      }
+
+      setNationalityOptions(
+        [...new Set(
+          nationalityRows
+            .map((row: any) => row.nationality?.trim())
+            .filter(Boolean)
+        )].sort()
+      );
+
+      // Load Intake and Degree options from application records visible under RLS.
+      const applicationRows: any[] = [];
+
+      for (let from = 0; ; from += 1000) {
+        const { data, error } = await supabase
+          .from("applications")
+          .select("intake, degree_level")
+          .order("created_at", { ascending: true })
+          .range(from, from + 999);
+
+        if (error) {
+          console.error("Application options loading error:", error.message);
+          break;
+        }
+
+        applicationRows.push(...(data || []));
+        if (!data || data.length < 1000) break;
+      }
+
+      setIntakeOptions(
+        [...new Set(
+          applicationRows
+            .map((row: any) => row.intake?.trim())
+            .filter(Boolean)
+        )].sort()
+      );
+
+      setDegreeOptions(
+        [...new Set(
+          applicationRows
+            .map((row: any) => row.degree_level?.trim())
+            .filter(Boolean)
+        )].sort()
+      );
+
+      // Load all existing Agents, including Active and Inactive, for filtering only.
+      const { data: filterAgentData, error: filterAgentError } = await supabase
+        .from("employees")
+        .select("id, full_name, is_active")
+        .eq("role", "agent")
+        .order("full_name");
+
+      if (filterAgentError) {
+        console.error("Filter Agent loading error:", filterAgentError.message);
+        setFilterAgents([]);
+      } else {
+        setFilterAgents(filterAgentData || []);
+      }
+
       if (emp && ["super_admin", "admin", "agent"].includes(emp.role)) {
         let agentQuery = supabase
           .from("employees")
@@ -239,17 +321,17 @@ export default function StudentModule() {
       let matchingStudentIds: string[] | null = null;
 
       // Intake, Degree and Current Status belong to the applications table.
-      if (f.intake.trim() || f.degree.trim() || f.currentStatus) {
+      if (f.intake || f.degree || f.currentStatus) {
         let applicationQuery = supabase
           .from("applications")
           .select("student_id")
           .not("student_id", "is", null);
 
-        if (f.intake.trim()) {
-          applicationQuery = applicationQuery.ilike("intake", `%${f.intake.trim()}%`);
+        if (f.intake) {
+          applicationQuery = applicationQuery.eq("intake", f.intake);
         }
-        if (f.degree.trim()) {
-          applicationQuery = applicationQuery.ilike("degree_level", `%${f.degree.trim()}%`);
+        if (f.degree) {
+          applicationQuery = applicationQuery.eq("degree_level", f.degree);
         }
         if (f.currentStatus) {
           applicationQuery = applicationQuery.eq("application_status", f.currentStatus);
@@ -283,11 +365,11 @@ if (employee?.role === "agent") {
       if (matchingStudentIds) query = query.in("id", matchingStudentIds);
       if (f.studentName.trim()) query = query.ilike("full_name", `%${f.studentName.trim()}%`);
       if (f.passport.trim()) query = query.ilike("passport_number", `%${f.passport.trim()}%`);
-      if (f.nationality.trim()) query = query.ilike("nationality", `%${f.nationality.trim()}%`);
+      if (f.nationality) query = query.eq("nationality", f.nationality);
       if (f.email.trim()) query = query.ilike("email", `%${f.email.trim()}%`);
       if (f.gender) query = query.eq("gender", f.gender);
       if (f.phone.trim()) query = query.ilike("phone", `%${f.phone.trim()}%`);
-      if (f.agent.trim()) query = query.ilike("agent_name", `%${f.agent.trim()}%`);
+      if (f.agent) query = query.eq("agent_name", f.agent);
       if (f.fromDate) query = query.gte("receiving_date", f.fromDate);
       if (f.toDate) query = query.lte("receiving_date", f.toDate);
 
@@ -1219,27 +1301,15 @@ if (employee?.role === "agent") {
       }}
       className="w-full rounded border border-slate-300 bg-white px-1 py-1 text-[10px]"
     >
-      {[
-        "Pending",
-        "Apply",
-        "Document Review",
-        "Submit",
-        "Completed",
-        "Hold",
-      ].map((status) => (
-        <option key={status} value={status}>
-          {status}
-        </option>
-      ))}
+      {APPLICATION_STATUSES.map((status) => (
+  <option key={status} value={status}>
+    {status}
+  </option>
+))}
       {a.application_status &&
-        ![
-          "Pending",
-          "Apply",
-          "Document Review",
-          "Submit",
-          "Completed",
-          "Hold",
-        ].includes(a.application_status) && (
+        !APPLICATION_STATUSES.includes(
+  a.application_status as (typeof APPLICATION_STATUSES)[number]
+) && (
           <option value={a.application_status}>
             {a.application_status}
           </option>
@@ -1526,16 +1596,16 @@ if (employee?.role === "agent") {
               {([
                 ["studentName", "Student Name", "text"],
                 ["passport", "Passport", "text"],
-                ["nationality", "Nationality", "text"],
+                ["nationality", "Nationality", "nationality"],
                 ["email", "Email", "email"],
                 ["gender", "Gender", "select"],
                 ["phone", "Phone", "text"],
-                ["intake", "Intake", "text"],
-                ["degree", "Degree", "text"],
+                ["intake", "Intake", "intake"],
+                ["degree", "Degree", "degree"],
                 ["fromDate", "From Date", "date"],
                 ["toDate", "To Date", "date"],
                 ["currentStatus", "Current Status", "status"],
-                ["agent", "Agent", "text"],
+                ["agent", "Agent", "agent"],
               ] as const).map(([key, label, type]) => (
                 <label key={key} className="block">
                   <span className="mb-1 block text-xs font-medium text-slate-600">{label}</span>
@@ -1555,7 +1625,47 @@ if (employee?.role === "agent") {
                       className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm outline-none focus:border-blue-500"
                     >
                       <option value="">All Statuses</option>
-                      {["Pending", "Apply", "Document Review", "Submit", "Completed", "Hold"].map((v) => <option key={v} value={v}>{v}</option>)}
+                      {APPLICATION_STATUSES.map((v) => <option key={v} value={v}>{v}</option>)}
+                    </select>
+                  ) : type === "nationality" ? (
+                    <select
+                      value={filters[key]}
+                      onChange={(e) => setFilters((old) => ({ ...old, [key]: e.target.value }))}
+                      className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm outline-none focus:border-blue-500"
+                    >
+                      <option value="">All Nationalities</option>
+                      {nationalityOptions.map((v) => <option key={v} value={v}>{v}</option>)}
+                    </select>
+                  ) : type === "intake" ? (
+                    <select
+                      value={filters[key]}
+                      onChange={(e) => setFilters((old) => ({ ...old, [key]: e.target.value }))}
+                      className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm outline-none focus:border-blue-500"
+                    >
+                      <option value="">All Intakes</option>
+                      {intakeOptions.map((v) => <option key={v} value={v}>{v}</option>)}
+                    </select>
+                  ) : type === "degree" ? (
+                    <select
+                      value={filters[key]}
+                      onChange={(e) => setFilters((old) => ({ ...old, [key]: e.target.value }))}
+                      className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm outline-none focus:border-blue-500"
+                    >
+                      <option value="">All Degrees</option>
+                      {degreeOptions.map((v) => <option key={v} value={v}>{v}</option>)}
+                    </select>
+                  ) : type === "agent" ? (
+                    <select
+                      value={filters[key]}
+                      onChange={(e) => setFilters((old) => ({ ...old, [key]: e.target.value }))}
+                      className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm outline-none focus:border-blue-500"
+                    >
+                      <option value="">All Agents</option>
+                      {filterAgents.map((a) => (
+                        <option key={a.id} value={a.full_name}>
+                          {a.full_name}{a.is_active ? "" : " (Inactive)"}
+                        </option>
+                      ))}
                     </select>
                   ) : (
                     <input

@@ -1,0 +1,17 @@
+﻿export const APPLICATION_STATUSES = [
+  "Pending",
+  "Apply",
+  "Document Review",
+  "Submit",
+  "Completed",
+  "Hold",
+  "Admitted",
+  "Admission Letter",
+  "Admission Letter & JW",
+  "Cancel",
+  "Pre-Admission",
+  "Rejected",
+  "Interview",
+  "Revoke",
+  "Pay application fee",
+] as const;

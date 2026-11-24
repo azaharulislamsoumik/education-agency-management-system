@@ -1,29 +1,34 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import {
-  createCipheriv,
-  createDecipheriv,
-  randomBytes,
-} from "crypto";
+
+export const maxDuration = 60;
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
+const REQUIRED_FIELDS = [
+  "full_name",
+  "passport_number",
+  "date_of_birth",
+  "gender",
+  "nationality",
+  "country_code",
+  "place_of_birth",
+  "date_of_issue",
+  "date_of_expiry",
+] as const;
 
 function getConfig() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const service = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const secret = process.env.UNIVERSITY_CREDENTIALS_ENCRYPTION_KEY;
+  const cloudUrl = process.env.CLOUD_OCR_API_URL;
+  const cloudKey = process.env.CLOUD_OCR_API_KEY;
 
-  if (!url || !anon || !service || !secret) {
-    throw new Error("Server configuration is incomplete.");
+  if (!url || !anon || !cloudUrl || !cloudKey) {
+    throw new Error("Passport OCR server configuration is incomplete.");
   }
 
-  const key = Buffer.from(secret, "base64");
-
-  if (key.length !== 32) {
-    throw new Error("Invalid encryption key. A 32-byte key is required.");
-  }
-
-  return { url, anon, service, key };
+  return { url, anon, cloudUrl, cloudKey };
 }
 
 async function authorize(request: NextRequest) {
@@ -48,7 +53,6 @@ async function authorize(request: NextRequest) {
   return !error && !!data.user;
 }
 
-// SAVE ENCRYPTED PASSWORD
 export async function POST(request: NextRequest) {
   try {
     if (!(await authorize(request))) {
@@ -58,176 +62,93 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { key, url, service } = getConfig();
-    const body = await request.json();
+    const { cloudUrl, cloudKey } = getConfig();
 
-    if (
-      typeof body.universityId !== "string" ||
-      typeof body.password !== "string" ||
-      body.password.length === 0 ||
-      body.password.length > 1024
-    ) {
+    const formData = await request.formData();
+    const file = formData.get("file");
+
+    if (!(file instanceof File)) {
       return NextResponse.json(
-        { error: "Invalid university ID or password." },
+        { error: "Please select a passport image." },
         { status: 400 }
       );
     }
 
-    const iv = randomBytes(12);
-
-    const cipher = createCipheriv(
-      "aes-256-gcm",
-      key,
-      iv
-    );
-
-    const encrypted = Buffer.concat([
-      cipher.update(body.password, "utf8"),
-      cipher.final(),
-    ]);
-
-    const authTag = cipher.getAuthTag();
-
-    const admin = createClient(url, service, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-      },
-    });
-
-    const { data, error } = await admin
-      .from("universities")
-      .update({
-        password_encrypted: encrypted.toString("base64"),
-        password_iv: iv.toString("base64"),
-        password_auth_tag: authTag.toString("base64"),
-      })
-      .eq("id", body.universityId)
-      .select("id");
-
-    if (error) {
-      console.error("Password save database error:", error);
-
+    if (file.size === 0 || file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
-        { error: error.message },
-        { status: 500 }
-      );
-    }
-
-    if (!data || data.length === 0) {
-      return NextResponse.json(
-        { error: "University not found. Password was not saved." },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({
-      success: true,
-      message: "Password saved successfully.",
-    });
-  } catch (error) {
-    console.error("Password save error:", error);
-
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Could not save password.",
-      },
-      { status: 500 }
-    );
-  }
-}
-
-// GET AND DECRYPT PASSWORD
-export async function GET(request: NextRequest) {
-  try {
-    if (!(await authorize(request))) {
-      return NextResponse.json(
-        { error: "Please sign in first." },
-        { status: 401 }
-      );
-    }
-
-    const { key, url, service } = getConfig();
-
-    const universityId =
-      request.nextUrl.searchParams.get("universityId");
-
-    if (!universityId) {
-      return NextResponse.json(
-        { error: "University ID is required." },
+        { error: "File must be between 1 byte and 10 MB." },
         { status: 400 }
       );
     }
 
-    const admin = createClient(url, service, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
+    const allowedTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "application/pdf",
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      return NextResponse.json(
+        { error: "Only JPG, PNG, WEBP and PDF files are supported." },
+        { status: 400 }
+      );
+    }
+
+    const cloudForm = new FormData();
+    cloudForm.append("file", file, file.name);
+
+    const response = await fetch(cloudUrl, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${cloudKey}`,
       },
+      body: cloudForm,
+      signal: AbortSignal.timeout(50000),
+      cache: "no-store",
     });
 
-    const { data, error } = await admin
-      .from("universities")
-      .select(
-        "password_encrypted, password_iv, password_auth_tag"
-      )
-      .eq("id", universityId)
-      .maybeSingle();
-
-    if (error) {
-      console.error("Password read database error:", error);
+    if (!response.ok) {
+      console.error("Cloud OCR failed:", response.status);
 
       return NextResponse.json(
-        { error: error.message },
-        { status: 500 }
+        { error: "Cloud OCR service could not process the passport." },
+        { status: 502 }
       );
     }
 
-    if (
-      !data ||
-      !data.password_encrypted ||
-      !data.password_iv ||
-      !data.password_auth_tag
-    ) {
-      return NextResponse.json(
-        { error: "No password saved for this university." },
-        { status: 404 }
-      );
-    }
+    const result = await response.json();
+    const source = result.data ?? result;
 
-    const decipher = createDecipheriv(
-      "aes-256-gcm",
-      key,
-      Buffer.from(data.password_iv, "base64")
+    const passport = Object.fromEntries(
+      REQUIRED_FIELDS.map((field) => [
+        field,
+        typeof source[field] === "string"
+          ? source[field].trim()
+          : "",
+      ])
     );
-
-    decipher.setAuthTag(
-      Buffer.from(data.password_auth_tag, "base64")
-    );
-
-    const decrypted = Buffer.concat([
-      decipher.update(
-        Buffer.from(data.password_encrypted, "base64")
-      ),
-      decipher.final(),
-    ]);
-
-    return NextResponse.json({
-      password: decrypted.toString("utf8"),
-    });
-  } catch (error) {
-    console.error("Password reveal error:", error);
 
     return NextResponse.json(
       {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Could not reveal password.",
+        success: true,
+        passport,
+        review_required: result.review_required ?? false,
       },
+      {
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      }
+    );
+  } catch (error) {
+    console.error(
+      "Passport OCR API error:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+
+    return NextResponse.json(
+      { error: "Passport scanning failed. Please try again." },
       { status: 500 }
     );
   }

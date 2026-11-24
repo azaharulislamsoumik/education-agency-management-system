@@ -7,6 +7,8 @@ import BoardModule from "@/features/board/board-module";
 import UniversityModule from "@/features/university/university-details/university-module";
 import OffersModule from "@/features/university/offers/offers-module";
 
+const BOARD_SECTIONS = ["Pending", "Apply", "Document Review", "Submit", "Completed", "Hold"] as const;
+
 type MenuItem = {
   label: string;
   icon: string;
@@ -19,7 +21,7 @@ const menuItems: MenuItem[] = [
   {
     label: "Board",
     icon: "▤",
-    children: ["Pending", "Apply", "Document Review", "Submit", "Completed", "Hold"],
+   children: [...BOARD_SECTIONS],
   },
   {
     label: "University",
