@@ -46,8 +46,8 @@ const EMPTY_FILTERS: Filters = {
   payment: "", priority: "", agent: "",
 };
 
-const inputClass = "h-8 min-w-0 w-full rounded-md border border-slate-300 bg-white px-2 text-[11px] text-slate-700 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100";
-const labelClass = "block shrink-0 text-[10px] font-semibold text-slate-700";
+const inputClass = "h-9 min-w-0 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100";
+const labelClass = "block shrink-0 text-sm font-semibold text-slate-700";
 
 export default function BoardModule({ statusFilter = "" }: { statusFilter?: string }) {
   const [rows, setRows] = useState<ApplicationRow[]>([]);
