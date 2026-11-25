@@ -126,7 +126,7 @@ export default function Home() {
 }}
               className="rounded-lg bg-blue-800 px-5 py-3 text-sm font-bold text-white transition hover:bg-blue-900"
             >
-              Register
+              Create Student Account
             </button>
           </div>
 
@@ -162,7 +162,7 @@ export default function Home() {
 }}
                 className="rounded-lg bg-blue-800 px-5 py-3 text-white"
               >
-                Register
+                Create Student Account
               </button>
             </nav>
           </div>
