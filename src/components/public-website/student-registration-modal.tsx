@@ -224,11 +224,33 @@ export default function StudentRegistrationModal({
                 placeholder="e.g. September 2027"
                 required />
 
-              <Field label="Preferred Study Country *"
-                value={form.studyCountry}
-                onChange={(v) => updateField("studyCountry", v)}
-                placeholder="Select your preferred country"
-                required />
+              
+<div>
+  <label className="mb-2 block text-sm font-semibold text-slate-700">
+    Preferred Study Country *
+  </label>
+  <select
+    value={form.studyCountry}
+    onChange={(e) => updateField("studyCountry", e.target.value)}
+    required
+    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-3 text-slate-800 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+  >
+    <option value="">Select your preferred country</option>
+    <option value="China">China</option>
+    <option value="Malaysia">Malaysia</option>
+    <option value="Japan">Japan</option>
+    <option value="South Korea">South Korea</option>
+    <option value="United Kingdom">United Kingdom</option>
+    <option value="United States">United States</option>
+    <option value="Canada">Canada</option>
+    <option value="Australia">Australia</option>
+    <option value="Germany">Germany</option>
+    <option value="Russia">Russia</option>
+    <option value="Hungary">Hungary</option>
+    <option value="Other">Other</option>
+  </select>
+</div>
+
 
               <Field label="Preferred Major / Subject"
                 value={form.major}
