@@ -14,9 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MalishaEdu | Your Gateway to Global Education",
+  title: "Edunexio | Your Gateway to Global Education",
   description:
-    "MalishaEdu supports students with international university admission guidance and application assistance.",
+    "Edunexio supports students with international university admission guidance and application assistance.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
