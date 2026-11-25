@@ -187,12 +187,25 @@ export default function StudentModule() {
     }
   }, [loading, screen, appliedFilters, page]);
 
+  
   async function initialize() {
     setLoading(true);
 
-    const { data: auth } = await supabase.auth.getUser();
+    try {
+      const { data: auth, error: authError } = await supabase.auth.getUser();
 
-    if (auth.user) {
+      if (authError) {
+        console.error("Authentication loading error:", authError.message);
+        setLoading(false);
+        return;
+      }
+
+      if (!auth.user) {
+        setEmployee(null);
+        setLoading(false);
+        return;
+      }
+
       const { data: emp, error: employeeError } = await supabase
         .from("employees")
         .select("id, full_name, role, is_active")
@@ -205,110 +218,123 @@ export default function StudentModule() {
 
       setEmployee(emp || null);
 
-      // Load Nationality options from student records visible under Supabase RLS.
-      const nationalityRows: any[] = [];
+      // Show the Student List without waiting for dropdown options.
+      setLoading(false);
 
-      for (let from = 0; ; from += 1000) {
-        const { data, error } = await supabase
-          .from("students")
-          .select("nationality")
-          .not("nationality", "is", null)
-          .order("created_at", { ascending: true })
-          .range(from, from + 999);
+      // Load dropdown options in the background.
+      void (async () => {
+        const nationalityTask = (async () => {
+          const nationalitySet = new Set<string>();
 
-        if (error) {
-          console.error("Nationality loading error:", error.message);
-          break;
-        }
+          for (let from = 0; ; from += 1000) {
+            const { data, error } = await supabase
+              .from("students")
+              .select("nationality")
+              .not("nationality", "is", null)
+              .range(from, from + 999);
 
-        nationalityRows.push(...(data || []));
-        if (!data || data.length < 1000) break;
-      }
+            if (error) {
+              console.error("Nationality loading error:", error.message);
+              break;
+            }
 
-      setNationalityOptions(
-        [...new Set(
-          nationalityRows
-            .map((row: any) => row.nationality?.trim())
-            .filter(Boolean)
-        )].sort()
-      );
+            (data || []).forEach((row: any) => {
+              const value = row.nationality?.trim();
+              if (value) nationalitySet.add(value);
+            });
 
-      // Load Intake and Degree options from application records visible under RLS.
-      const applicationRows: any[] = [];
+            if (!data || data.length < 1000) break;
+          }
 
-      for (let from = 0; ; from += 1000) {
-        const { data, error } = await supabase
-          .from("applications")
-          .select("intake, degree_level")
-          .order("created_at", { ascending: true })
-          .range(from, from + 999);
+          setNationalityOptions([...nationalitySet].sort());
+        })();
 
-        if (error) {
-          console.error("Application options loading error:", error.message);
-          break;
-        }
+        const applicationOptionsTask = (async () => {
+          const intakeSet = new Set<string>();
+          const degreeSet = new Set<string>();
 
-        applicationRows.push(...(data || []));
-        if (!data || data.length < 1000) break;
-      }
+          for (let from = 0; ; from += 1000) {
+            const { data, error } = await supabase
+              .from("applications")
+              .select("intake, degree_level")
+              .range(from, from + 999);
 
-      setIntakeOptions(
-        [...new Set(
-          applicationRows
-            .map((row: any) => row.intake?.trim())
-            .filter(Boolean)
-        )].sort()
-      );
+            if (error) {
+              console.error("Application options loading error:", error.message);
+              break;
+            }
 
-      setDegreeOptions(
-        [...new Set(
-          applicationRows
-            .map((row: any) => row.degree_level?.trim())
-            .filter(Boolean)
-        )].sort()
-      );
+            (data || []).forEach((row: any) => {
+              const intake = row.intake?.trim();
+              const degree = row.degree_level?.trim();
 
-      // Load all existing Agents, including Active and Inactive, for filtering only.
-      const { data: filterAgentData, error: filterAgentError } = await supabase
-        .from("employees")
-        .select("id, full_name, is_active")
-        .eq("role", "agent")
-        .order("full_name");
+              if (intake) intakeSet.add(intake);
+              if (degree) degreeSet.add(degree);
+            });
 
-      if (filterAgentError) {
-        console.error("Filter Agent loading error:", filterAgentError.message);
-        setFilterAgents([]);
-      } else {
-        setFilterAgents(filterAgentData || []);
-      }
+            if (!data || data.length < 1000) break;
+          }
 
-      if (emp && ["super_admin", "admin", "agent"].includes(emp.role)) {
-        let agentQuery = supabase
-          .from("employees")
-          .select("id, full_name")
-          .eq("role", "agent")
-          .eq("is_active", true)
-          .order("full_name");
+          setIntakeOptions([...intakeSet].sort());
+          setDegreeOptions([...degreeSet].sort());
+        })();
 
-        // Agents can only see/select themselves in the assignment dropdown.
-        if (emp.role === "agent") {
-          agentQuery = agentQuery.eq("id", emp.id);
-        }
+        const filterAgentsTask = (async () => {
+          const { data, error } = await supabase
+            .from("employees")
+            .select("id, full_name, is_active")
+            .eq("role", "agent")
+            .order("full_name");
 
-        const { data: agentData, error: agentError } = await agentQuery;
+          if (error) {
+            console.error("Filter Agent loading error:", error.message);
+            setFilterAgents([]);
+          } else {
+            setFilterAgents(data || []);
+          }
+        })();
 
-        if (agentError) {
-          console.error("Agent loading error:", agentError.message);
-          setAgents([]);
-        } else {
-          setAgents(agentData || []);
-        }
-      } else {
-        setAgents([]);
-      }
+        const assignableAgentsTask = (async () => {
+          if (!emp || !["super_admin", "admin", "agent"].includes(emp.role)) {
+            setAgents([]);
+            return;
+          }
+
+          let agentQuery = supabase
+            .from("employees")
+            .select("id, full_name")
+            .eq("role", "agent")
+            .eq("is_active", true)
+            .order("full_name");
+
+          // Agents can only see/select themselves.
+          if (emp.role === "agent") {
+            agentQuery = agentQuery.eq("id", emp.id);
+          }
+
+          const { data, error } = await agentQuery;
+
+          if (error) {
+            console.error("Agent loading error:", error.message);
+            setAgents([]);
+          } else {
+            setAgents(data || []);
+          }
+        })();
+
+        await Promise.all([
+          nationalityTask,
+          applicationOptionsTask,
+          filterAgentsTask,
+          assignableAgentsTask,
+        ]);
+      })();
+
+    } catch (error: any) {
+      console.error("Student module initialization error:", error);
+      setEmployee(null);
+      setLoading(false);
     }
-
-    setLoading(false);
   }
 
   async function loadStudents() {
