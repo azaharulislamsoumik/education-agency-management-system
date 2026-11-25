@@ -87,8 +87,8 @@ export default function Home() {
       <header className="sticky top-0 z-40 border-b border-slate-100 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-8">
           <a href="#" className="text-2xl font-extrabold tracking-tight">
-            <span className="text-blue-800">Malisha</span>
-            <span className="text-amber-500">Edu</span>
+            <span className="text-blue-800">Edunex</span>
+            <span className="text-amber-500">io</span>
             <span className="ml-2 block text-[9px] font-semibold uppercase tracking-[3px] text-slate-400">
               Global Education Consultancy
             </span>
@@ -182,7 +182,7 @@ export default function Home() {
                 href="#about"
                 className="rounded-lg border border-white/40 px-7 py-4 text-sm font-bold text-white transition hover:bg-white/10"
               >
-                Discover MalishaEdu
+                Discover Edunexio
               </a>
             </div>
           </div>
@@ -195,7 +195,7 @@ export default function Home() {
                 <div className="text-center">
                   <div className="text-5xl">🌍</div>
                   <div className="mt-3 text-xl font-extrabold text-blue-900">
-                    MalishaEdu
+                    Edunexio
                   </div>
                   <div className="text-xs text-slate-500">Study Beyond Borders</div>
                 </div>
@@ -216,13 +216,13 @@ export default function Home() {
         <div className="mx-auto grid max-w-7xl gap-14 lg:grid-cols-2 lg:items-center">
           <div>
             <p className="text-sm font-bold uppercase tracking-[3px] text-amber-600">
-              About MalishaEdu
+              About Edunexio
             </p>
             <h2 className="mt-4 text-3xl font-extrabold leading-tight text-blue-950 sm:text-4xl">
               Helping Students Move Towards a Brighter Future
             </h2>
             <p className="mt-6 leading-8 text-slate-600">
-              MalishaEdu is dedicated to supporting students who aspire to
+              Edunexio is dedicated to supporting students who aspire to
               pursue international education. We aim to make the admission
               journey easier through guidance, application assistance and
               student-focused support.
@@ -308,7 +308,7 @@ export default function Home() {
             Ready to Explore Your Opportunities?
           </h2>
           <p className="mx-auto mt-5 max-w-2xl leading-7 text-blue-100">
-            Connect with MalishaEdu and take your next step towards
+            Connect with Edunexio and take your next step towards
             international education.
           </p>
           <button
@@ -325,14 +325,14 @@ export default function Home() {
         <div className="mx-auto flex max-w-7xl flex-col justify-between gap-6 sm:flex-row sm:items-center">
           <div>
             <div className="text-2xl font-extrabold">
-              Malisha<span className="text-amber-400">Edu</span>
+              Edunex<span className="text-amber-400">io</span>
             </div>
             <p className="mt-2 text-sm text-slate-400">
               Your Gateway to Global Education
             </p>
           </div>
           <p className="text-sm text-slate-400">
-            © {new Date().getFullYear()} MalishaEdu. All rights reserved.
+            © {new Date().getFullYear()} Edunexio. All rights reserved.
           </p>
         </div>
       </footer>
@@ -361,8 +361,8 @@ export default function Home() {
 
             <div className="mb-8">
               <div className="text-2xl font-extrabold">
-                <span className="text-blue-800">Malisha</span>
-                <span className="text-amber-500">Edu</span>
+                <span className="text-blue-800">Edunex</span>
+                <span className="text-amber-500">io</span>
               </div>
               <h2 id="login-title" className="mt-7 text-2xl font-extrabold text-slate-900">
                 Welcome Back!
@@ -419,7 +419,7 @@ export default function Home() {
             </form>
 
             <p className="mt-7 text-center text-xs text-slate-400">
-              © {new Date().getFullYear()} MalishaEdu. All rights reserved.
+              © {new Date().getFullYear()} Edunexio. All rights reserved.
             </p>
           </div>
         </div>
