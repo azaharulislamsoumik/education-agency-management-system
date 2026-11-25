@@ -4,11 +4,13 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import StudentRegistrationModal from "@/components/public-website/student-registration-modal";
 
 export default function Home() {
   const router = useRouter();
 
   const [loginOpen, setLoginOpen] = useState(false);
+  const [registrationOpen, setRegistrationOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const [email, setEmail] = useState("");
@@ -118,9 +120,10 @@ export default function Home() {
               Login
             </button>
             <button
-              onClick={() =>
-                alert("Student registration will be enabled after account security setup.")
-              }
+             onClick={() => {
+  setRegistrationOpen(true);
+  setMobileMenuOpen(false);
+}}
               className="rounded-lg bg-blue-800 px-5 py-3 text-sm font-bold text-white transition hover:bg-blue-900"
             >
               Register
@@ -153,9 +156,10 @@ export default function Home() {
               </button>
 
               <button
-                onClick={() =>
-                  alert("Student registration will be enabled after account security setup.")
-                }
+                onClick={() => {
+  setRegistrationOpen(true);
+  setMobileMenuOpen(false);
+}}
                 className="rounded-lg bg-blue-800 px-5 py-3 text-white"
               >
                 Register
@@ -489,6 +493,10 @@ export default function Home() {
           </div>
         </div>
       )}
+      <StudentRegistrationModal
+  isOpen={registrationOpen}
+  onClose={() => setRegistrationOpen(false)}
+/>
     </main>
   );
 }
