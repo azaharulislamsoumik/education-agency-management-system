@@ -54,10 +54,62 @@ export default function Home() {
         return;
       }
 
-      setSuccess("Login successful. Redirecting...");
-      setLoginOpen(false);
-      router.replace("/dashboard");
-      router.refresh();
+     const { data: studentProfile, error: studentProfileError } =
+  await supabase.rpc("get_student_portal_profile");
+
+if (studentProfileError) throw studentProfileError;
+
+const hasStudentProfile = Array.isArray(studentProfile)
+  ? studentProfile.length > 0
+  : Boolean(studentProfile);
+
+if (hasStudentProfile) {
+  setSuccess("Student login successful. Opening your portal...");
+  setLoginOpen(false);
+  router.replace("/student-portal");
+  router.refresh();
+  return;
+}
+
+const { data: authData, error: authUserError } =
+  await supabase.auth.getUser();
+
+if (authUserError || !authData.user) {
+  throw new Error("Unable to verify your account. Please sign in again.");
+}
+
+const { data: employee, error: employeeError } = await supabase
+  .from("employees")
+  .select("id, role, is_active")
+  .eq("auth_user_id", authData.user.id)
+  .maybeSingle();
+
+if (employeeError) throw employeeError;
+
+const allowedStaffRoles = [
+  "super_admin",
+  "admin",
+  "manager",
+  "account",
+  "agent",
+  "employee",
+];
+
+if (
+  !employee ||
+  !employee.is_active ||
+  !allowedStaffRoles.includes(employee.role)
+) {
+  await supabase.auth.signOut();
+  throw new Error(
+    "No active Student or Staff profile was found for this account. Please contact Edunexio support."
+  );
+}
+
+setSuccess("Login successful. Redirecting...");
+setLoginOpen(false);
+router.replace("/dashboard");
+router.refresh();
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
