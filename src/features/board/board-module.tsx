@@ -473,8 +473,18 @@ export default function BoardModule({
     }
 
     const previousStatus = actualStatus;
-    const nextStatus =
-      statusFilter === "Document Review" ? "Submit" : "Completed";
+    const workflowNextStatus: Record<string, string> = {
+      Pending: "Document Review",
+      "Document Review": "Apply",
+      Apply: "Submit",
+      Submit: "Completed",
+    };
+    const nextStatus = workflowNextStatus[previousStatus];
+
+    if (!nextStatus) {
+      setMessage(`No further workflow step is defined for status: ${previousStatus}.`);
+      return;
+    }
 
     const studentName = row.student?.full_name || "Student";
     const passportNumber = row.student?.passport_number || "N/A";
@@ -490,7 +500,7 @@ export default function BoardModule({
 
       if (updateError) throw updateError;
 
-      if (statusFilter === "Document Review") {
+      if (previousStatus === "Document Review") {
         const { error: logError } = await supabase
           .from("student_activity_logs")
           .insert({
@@ -502,7 +512,7 @@ export default function BoardModule({
 
         if (logError) {
           setMessage(
-            `Status moved to Submit, but the automatic log could not be saved: ${logError.message}`
+            `Status moved to Apply, but the automatic log could not be saved: ${logError.message}`
           );
 
           await loadRows();
@@ -510,11 +520,11 @@ export default function BoardModule({
         }
 
         setMessage(
-          `${studentName}'s application moved to Submit and the activity log was saved.`
+          `${studentName}'s application moved to Apply and the activity log was saved.`
         );
       } else {
         setMessage(
-          `${studentName}'s application marked as Completed.`
+          `${studentName}'s application moved from ${previousStatus} to ${nextStatus}.`
         );
       }
 
