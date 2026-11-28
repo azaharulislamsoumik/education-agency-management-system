@@ -65,8 +65,10 @@ const labelClass = "block shrink-0 text-xs font-medium text-slate-600";
 
 export default function BoardModule({
   statusFilter = "",
+  onViewStudent,
 }: {
   statusFilter?: string;
+  onViewStudent?: (studentId: string) => void;
 }) {
   const [rows, setRows] = useState<ApplicationRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -1035,6 +1037,16 @@ export default function BoardModule({
 
                     <td className="border border-slate-200 px-1.5 py-1">
                       <div className="flex items-center justify-center gap-2 whitespace-nowrap">
+                        <button
+                          disabled={!a.student_id || !onViewStudent}
+                          onClick={() => {
+                            if (a.student_id) onViewStudent?.(a.student_id);
+                          }}
+                          className="font-semibold text-blue-700 hover:underline disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          View
+                        </button>
+
                         <button
                           onClick={() => void openNotes(a)}
                           className="font-semibold text-indigo-700 hover:underline"
