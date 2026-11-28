@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 type University = {
   id: string;
   university_name: string;
+  ownership: string | null;
   province: string | null;
   intake: string[] | null;
   degree: string[] | null;
@@ -39,6 +40,7 @@ type UniversityLog = {
 
 type UniversityForm = {
   university_name: string;
+  ownership: string;
   province: string;
   intake: string;
   degree: string;
@@ -55,6 +57,7 @@ type UniversityForm = {
 
 const emptyForm: UniversityForm = {
   university_name: "",
+  ownership: "",
   province: "",
   intake: "",
   degree: "",
@@ -72,6 +75,7 @@ const emptyForm: UniversityForm = {
 const columns = [
   "S.N.",
   "University Name",
+  "Ownership",
   "Province",
   "Intake",
   "Degree",
@@ -309,8 +313,9 @@ export default function UniversityModule() {
     const { data, error } = await supabase
       .from("universities")
       .select(`
-        id, university_name, province, intake, degree, tuition_fee_type, type,
-        scholarship, requirements, restricted_account_country, apply_link,
+        id, university_name, ownership, province, intake, degree,
+        tuition_fee_type, type, scholarship, requirements,
+        restricted_account_country, apply_link,
         user_id, responsible_person, is_active, created_at
       `)
       .order("university_name", { ascending: true });
@@ -460,6 +465,7 @@ export default function UniversityModule() {
 
     setForm({
       university_name: university.university_name || "",
+      ownership: university.ownership || "",
       province: university.province || "",
       intake: listToText(university.intake),
       degree: listToText(university.degree),
@@ -505,6 +511,7 @@ export default function UniversityModule() {
 
     const payload = {
       university_name: form.university_name.trim(),
+      ownership: form.ownership.trim() || null,
       province: form.province.trim() || null,
       intake: textToList(form.intake),
       degree: textToList(form.degree),
@@ -1153,6 +1160,10 @@ export default function UniversityModule() {
                       </span>
                     </td>
 
+                    <td className="max-w-[160px] whitespace-normal break-words border-b border-r border-slate-100 px-3 py-3">
+                      {university.ownership || "—"}
+                    </td>
+
                     <td className="max-w-[180px] whitespace-normal break-words border-b border-r border-slate-100 px-3 py-3">
                       {university.province || "—"}
                     </td>
@@ -1336,6 +1347,12 @@ export default function UniversityModule() {
                 "University name"
               )}
 
+              {renderField(
+                "Ownership",
+                "ownership",
+                "e.g. Public, Private, Personal"
+              )}
+
               {renderField("Province", "province", "e.g. Hefei")}
 
               {renderField(
@@ -1359,7 +1376,7 @@ export default function UniversityModule() {
                 true
               )}
 
-              {renderField("Type", "type", "e.g. Personal")}
+              {renderField("Account Type", "type", "Enter account type")}
 
               {renderField(
                 "Scholarship (one item per line)",
@@ -1402,7 +1419,7 @@ export default function UniversityModule() {
 
                 <div className="flex gap-2">
                   <input
-  type={showFormPassword ? "text" : "password"}
+                    type={showFormPassword ? "text" : "password"}
                     name="uni-portal-secret-field"
                     autoComplete="off"
                     spellCheck={false}
