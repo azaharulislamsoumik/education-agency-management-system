@@ -1017,22 +1017,9 @@ export default function BoardModule({
                     </td>
 
                     <td className="border border-slate-200 px-1.5 py-1">
-                      <select
-                        aria-label="Application status"
-                        value={a.application_status || "Pending"}
-                        onChange={(e) =>
-                          void updateApplication(
-                            a.id,
-                            "application_status",
-                            e.target.value
-                          )
-                        }
-                        className="max-w-[150px] rounded border border-slate-200 bg-white px-1 py-0.5 text-indigo-700"
-                      >
-                        {STATUS_OPTIONS.map((x) => (
-                          <option key={x} value={x}>{x}</option>
-                        ))}
-                      </select>
+                      <span className="font-medium text-slate-700">
+                        {a.application_status || "Pending"}
+                      </span>
                     </td>
 
                     <td className="border border-slate-200 px-1.5 py-1">
