@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -123,6 +122,7 @@ function displayList(value: string[] | null | undefined) {
   );
 }
 
+/* MULTI SELECT DROPDOWN */
 function MultiSelectDropdown({
   label,
   options,
@@ -265,6 +265,137 @@ function MultiSelectDropdown({
   );
 }
 
+/* SINGLE SELECT DROPDOWN */
+function SingleSelectDropdown({
+  label,
+  options,
+  value,
+  onChange,
+  placeholder = "Select an option",
+  open,
+  onToggle,
+  onClose,
+}: {
+  label: string;
+  options: string[];
+  value: string;
+  onChange: (next: string) => void;
+  placeholder?: string;
+  open: boolean;
+  onToggle: () => void;
+  onClose: () => void;
+}) {
+  const [query, setQuery] = useState("");
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const handleOutsideClick = (event: Event) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        onClose();
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("touchstart", handleOutsideClick);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("touchstart", handleOutsideClick);
+    };
+  }, [open, onClose]);
+
+  const filtered = options.filter((option) =>
+    option.toLowerCase().includes(query.toLowerCase())
+  );
+
+  return (
+    <div ref={dropdownRef} className="relative min-w-0">
+      <label className="mb-1.5 block text-sm font-medium text-slate-700">
+        {label}
+      </label>
+
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex min-h-[42px] w-full items-center justify-between gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-left text-sm hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
+      >
+        <span className={value ? "truncate text-slate-700" : "text-slate-400"}>
+          {value || placeholder}
+        </span>
+
+        <span className="text-slate-400">{open ? "▴" : "▾"}</span>
+      </button>
+
+      {open && (
+        <div className="absolute left-0 top-full z-40 mt-1 w-full min-w-[230px] rounded-lg border border-slate-200 bg-white p-2 shadow-xl">
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search options..."
+            autoComplete="off"
+            className="mb-2 w-full rounded-md border border-slate-200 px-2.5 py-2 text-xs outline-none focus:border-blue-500"
+          />
+
+          <div className="mb-2 flex items-center justify-between border-b border-slate-100 pb-2 text-xs">
+            <button
+              type="button"
+              onClick={() => {
+                onChange("");
+                onClose();
+              }}
+              className="font-medium text-slate-500 hover:underline"
+            >
+              Clear
+            </button>
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="font-semibold text-slate-700 hover:underline"
+            >
+              Done
+            </button>
+          </div>
+
+          <div className="max-h-52 overflow-y-auto">
+            {filtered.length ? (
+              filtered.map((option) => (
+                <button
+                  type="button"
+                  key={option}
+                  onClick={() => {
+                    onChange(option);
+                    onClose();
+                  }}
+                  className={`block w-full rounded px-3 py-2 text-left text-sm hover:bg-blue-50 ${
+                    value === option
+                      ? "bg-blue-50 font-semibold text-blue-700"
+                      : "text-slate-700"
+                  }`}
+                >
+                  {option}
+                  {value === option && (
+                    <span className="float-right text-blue-600">✓</span>
+                  )}
+                </button>
+              ))
+            ) : (
+              <p className="px-2 py-3 text-xs text-slate-400">
+                No options found.
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function UniversityModule() {
   const [universities, setUniversities] = useState<University[]>([]);
   const [loading, setLoading] = useState(true);
@@ -273,6 +404,9 @@ export default function UniversityModule() {
   const [openFilterDropdown, setOpenFilterDropdown] = useState<string | null>(
     null
   );
+
+  // Add/Edit form dropdown state
+  const [openFormDropdown, setOpenFormDropdown] = useState<string | null>(null);
 
   const [search, setSearch] = useState("");
   const [provinceFilter, setProvinceFilter] = useState("");
@@ -300,11 +434,15 @@ export default function UniversityModule() {
   const [showLogs, setShowLogs] = useState(false);
 
   const [showFormPassword, setShowFormPassword] = useState(false);
-  const [passwordCache, setPasswordCache] = useState<Record<string, string>>({});
+  const [passwordCache, setPasswordCache] = useState<Record<string, string>>(
+    {}
+  );
   const [passwordVisibility, setPasswordVisibility] = useState<
     Record<string, boolean>
   >({});
-  const [passwordLoadingId, setPasswordLoadingId] = useState<string | null>(null);
+  const [passwordLoadingId, setPasswordLoadingId] = useState<string | null>(
+    null
+  );
 
   const loadUniversities = useCallback(async () => {
     setLoading(true);
@@ -345,16 +483,20 @@ export default function UniversityModule() {
         ),
       ].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
 
-    return {
-      provinces: [
+    const collectSingle = (getter: (u: University) => string | null) =>
+      [
         ...new Set(
           universities
-            .map((u) => u.province?.trim())
+            .map(getter)
+            .map((v) => v?.trim())
             .filter((v): v is string => Boolean(v))
         ),
-      ].sort((a, b) =>
-        a.localeCompare(b, undefined, { sensitivity: "base" })
-      ),
+      ].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+
+    return {
+      ownerships: collectSingle((u) => u.ownership),
+      provinces: collectSingle((u) => u.province),
+      accountTypes: collectSingle((u) => u.type),
       intakes: collect((u) => u.intake || []),
       degrees: collect((u) => u.degree || []),
       tuition: collect((u) => u.tuition_fee_type || []),
@@ -453,6 +595,7 @@ export default function UniversityModule() {
   function startAdd() {
     setEditing(null);
     setShowFormPassword(false);
+    setOpenFormDropdown(null);
     setForm({ ...emptyForm });
     setShowForm(true);
     setMessage("");
@@ -462,6 +605,7 @@ export default function UniversityModule() {
   function startEdit(university: University) {
     setEditing(university);
     setShowFormPassword(false);
+    setOpenFormDropdown(null);
 
     setForm({
       university_name: university.university_name || "",
@@ -632,6 +776,7 @@ export default function UniversityModule() {
       setEditing(null);
       setForm({ ...emptyForm });
       setShowFormPassword(false);
+      setOpenFormDropdown(null);
 
       await loadUniversities();
     } catch (error) {
@@ -1313,7 +1458,10 @@ export default function UniversityModule() {
               </h2>
 
               <button
-                onClick={() => setShowForm(false)}
+                onClick={() => {
+                  setShowForm(false);
+                  setOpenFormDropdown(null);
+                }}
                 className="text-2xl text-slate-400 hover:text-slate-700"
               >
                 ×
@@ -1347,57 +1495,159 @@ export default function UniversityModule() {
                 "University name"
               )}
 
-              {renderField(
-                "Ownership",
-                "ownership",
-                "e.g. Public, Private, Personal"
-              )}
+              <SingleSelectDropdown
+                label="Ownership"
+                options={uniqueOptions.ownerships}
+                value={form.ownership}
+                onChange={(value) => updateForm("ownership", value)}
+                placeholder="Select ownership"
+                open={openFormDropdown === "ownership"}
+                onToggle={() =>
+                  setOpenFormDropdown((current) =>
+                    current === "ownership" ? null : "ownership"
+                  )
+                }
+                onClose={() => setOpenFormDropdown(null)}
+              />
 
-              {renderField("Province", "province", "e.g. Hefei")}
+              <SingleSelectDropdown
+                label="Province"
+                options={uniqueOptions.provinces}
+                value={form.province}
+                onChange={(value) => updateForm("province", value)}
+                placeholder="Select province"
+                open={openFormDropdown === "province"}
+                onToggle={() =>
+                  setOpenFormDropdown((current) =>
+                    current === "province" ? null : "province"
+                  )
+                }
+                onClose={() => setOpenFormDropdown(null)}
+              />
 
-              {renderField(
-                "Intake (one item per line)",
-                "intake",
-                "Mar. 2025\nSep. 2025",
-                true
-              )}
+              <MultiSelectDropdown
+                label="Intake"
+                options={uniqueOptions.intakes}
+                value={textToList(form.intake)}
+                onChange={(value) =>
+                  updateForm("intake", value.join("\n"))
+                }
+                placeholder="Select intake"
+                open={openFormDropdown === "form-intake"}
+                onToggle={() =>
+                  setOpenFormDropdown((current) =>
+                    current === "form-intake" ? null : "form-intake"
+                  )
+                }
+                onClose={() => setOpenFormDropdown(null)}
+              />
 
-              {renderField(
-                "Degree (one item per line)",
-                "degree",
-                "Bachelor\nMaster",
-                true
-              )}
+              <MultiSelectDropdown
+                label="Degree"
+                options={uniqueOptions.degrees}
+                value={textToList(form.degree)}
+                onChange={(value) =>
+                  updateForm("degree", value.join("\n"))
+                }
+                placeholder="Select degree"
+                open={openFormDropdown === "form-degree"}
+                onToggle={() =>
+                  setOpenFormDropdown((current) =>
+                    current === "form-degree" ? null : "form-degree"
+                  )
+                }
+                onClose={() => setOpenFormDropdown(null)}
+              />
 
-              {renderField(
-                "Tuition Fee Type (one item per line)",
-                "tuition_fee_type",
-                "Partial Free\nAccommodation",
-                true
-              )}
+              <MultiSelectDropdown
+                label="Tuition Fee Type"
+                options={uniqueOptions.tuition}
+                value={textToList(form.tuition_fee_type)}
+                onChange={(value) =>
+                  updateForm("tuition_fee_type", value.join("\n"))
+                }
+                placeholder="Select tuition fee type"
+                open={openFormDropdown === "form-tuition"}
+                onToggle={() =>
+                  setOpenFormDropdown((current) =>
+                    current === "form-tuition" ? null : "form-tuition"
+                  )
+                }
+                onClose={() => setOpenFormDropdown(null)}
+              />
 
-              {renderField("Account Type", "type", "Enter account type")}
+              <SingleSelectDropdown
+                label="Account Type"
+                options={uniqueOptions.accountTypes}
+                value={form.type}
+                onChange={(value) => updateForm("type", value)}
+                placeholder="Select account type"
+                open={openFormDropdown === "account-type"}
+                onToggle={() =>
+                  setOpenFormDropdown((current) =>
+                    current === "account-type" ? null : "account-type"
+                  )
+                }
+                onClose={() => setOpenFormDropdown(null)}
+              />
 
-              {renderField(
-                "Scholarship (one item per line)",
-                "scholarship",
-                "Belt and Road\nUniversity Scholarship",
-                true
-              )}
+              <MultiSelectDropdown
+                label="Scholarship"
+                options={uniqueOptions.scholarships}
+                value={textToList(form.scholarship)}
+                onChange={(value) =>
+                  updateForm("scholarship", value.join("\n"))
+                }
+                placeholder="Select scholarship"
+                open={openFormDropdown === "form-scholarship"}
+                onToggle={() =>
+                  setOpenFormDropdown((current) =>
+                    current === "form-scholarship"
+                      ? null
+                      : "form-scholarship"
+                  )
+                }
+                onClose={() => setOpenFormDropdown(null)}
+              />
 
-              {renderField(
-                "Requirements (one item per line)",
-                "requirements",
-                "Age Limit\nHSK",
-                true
-              )}
+              <MultiSelectDropdown
+                label="Requirements"
+                options={uniqueOptions.requirements}
+                value={textToList(form.requirements)}
+                onChange={(value) =>
+                  updateForm("requirements", value.join("\n"))
+                }
+                placeholder="Select requirements"
+                open={openFormDropdown === "form-requirements"}
+                onToggle={() =>
+                  setOpenFormDropdown((current) =>
+                    current === "form-requirements"
+                      ? null
+                      : "form-requirements"
+                  )
+                }
+                onClose={() => setOpenFormDropdown(null)}
+              />
 
-              {renderField(
-                "Restricted Account Country (one item per line)",
-                "restricted_account_country",
-                "Afghanistan\nAlbania",
-                true
-              )}
+              <MultiSelectDropdown
+                label="Restricted Account Country"
+                options={uniqueOptions.countries}
+                value={textToList(form.restricted_account_country)}
+                onChange={(value) =>
+                  updateForm(
+                    "restricted_account_country",
+                    value.join("\n")
+                  )
+                }
+                placeholder="Select restricted countries"
+                open={openFormDropdown === "form-country"}
+                onToggle={() =>
+                  setOpenFormDropdown((current) =>
+                    current === "form-country" ? null : "form-country"
+                  )
+                }
+                onClose={() => setOpenFormDropdown(null)}
+              />
 
               {renderField("Apply Link", "apply_link", "https://...")}
 
@@ -1453,7 +1703,10 @@ export default function UniversityModule() {
 
             <div className="mt-6 flex justify-end gap-2">
               <button
-                onClick={() => setShowForm(false)}
+                onClick={() => {
+                  setShowForm(false);
+                  setOpenFormDropdown(null);
+                }}
                 className="rounded-lg border border-slate-300 px-4 py-2 text-sm"
               >
                 Cancel
