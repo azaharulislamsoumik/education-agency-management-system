@@ -187,6 +187,7 @@ export default function StudentModule() {
     }
   }, [loading, screen, appliedFilters, page]);
 
+  
   async function initialize() {
     setLoading(true);
 

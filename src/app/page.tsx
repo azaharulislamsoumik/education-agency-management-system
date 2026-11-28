@@ -4,11 +4,13 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import StudentRegistrationModal from "@/components/public-website/student-registration-modal";
 
 export default function Home() {
   const router = useRouter();
 
   const [loginOpen, setLoginOpen] = useState(false);
+  const [registrationOpen, setRegistrationOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const [email, setEmail] = useState("");
@@ -52,10 +54,62 @@ export default function Home() {
         return;
       }
 
-      setSuccess("Login successful. Redirecting...");
-      setLoginOpen(false);
-      router.replace("/dashboard");
-      router.refresh();
+     const { data: studentProfile, error: studentProfileError } =
+  await supabase.rpc("get_student_portal_profile");
+
+if (studentProfileError) throw studentProfileError;
+
+const hasStudentProfile = Array.isArray(studentProfile)
+  ? studentProfile.length > 0
+  : Boolean(studentProfile);
+
+if (hasStudentProfile) {
+  setSuccess("Student login successful. Opening your portal...");
+  setLoginOpen(false);
+  router.replace("/student-portal");
+  router.refresh();
+  return;
+}
+
+const { data: authData, error: authUserError } =
+  await supabase.auth.getUser();
+
+if (authUserError || !authData.user) {
+  throw new Error("Unable to verify your account. Please sign in again.");
+}
+
+const { data: employee, error: employeeError } = await supabase
+  .from("employees")
+  .select("id, role, is_active")
+  .eq("auth_user_id", authData.user.id)
+  .maybeSingle();
+
+if (employeeError) throw employeeError;
+
+const allowedStaffRoles = [
+  "super_admin",
+  "admin",
+  "manager",
+  "account",
+  "agent",
+  "employee",
+];
+
+if (
+  !employee ||
+  !employee.is_active ||
+  !allowedStaffRoles.includes(employee.role)
+) {
+  await supabase.auth.signOut();
+  throw new Error(
+    "No active Student or Staff profile was found for this account. Please contact Edunexio support."
+  );
+}
+
+setSuccess("Login successful. Redirecting...");
+setLoginOpen(false);
+router.replace("/dashboard");
+router.refresh();
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -118,12 +172,13 @@ export default function Home() {
               Login
             </button>
             <button
-              onClick={() =>
-                alert("Student registration will be enabled after account security setup.")
-              }
+             onClick={() => {
+  setRegistrationOpen(true);
+  setMobileMenuOpen(false);
+}}
               className="rounded-lg bg-blue-800 px-5 py-3 text-sm font-bold text-white transition hover:bg-blue-900"
             >
-              Register
+              Create Student Account
             </button>
           </div>
 
@@ -153,12 +208,13 @@ export default function Home() {
               </button>
 
               <button
-                onClick={() =>
-                  alert("Student registration will be enabled after account security setup.")
-                }
+                onClick={() => {
+  setRegistrationOpen(true);
+  setMobileMenuOpen(false);
+}}
                 className="rounded-lg bg-blue-800 px-5 py-3 text-white"
               >
-                Register
+                Create Student Account
               </button>
             </nav>
           </div>
@@ -489,6 +545,10 @@ export default function Home() {
           </div>
         </div>
       )}
+      <StudentRegistrationModal
+  isOpen={registrationOpen}
+  onClose={() => setRegistrationOpen(false)}
+/>
     </main>
   );
 }
