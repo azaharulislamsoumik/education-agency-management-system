@@ -104,6 +104,11 @@ export default function BoardModule({
 
   const [studentMatches, setStudentMatches] = useState<any[]>([]);
   const [universities, setUniversities] = useState<any[]>([]);
+  const [nationalityOptions, setNationalityOptions] = useState<string[]>([]);
+  const [intakeOptions, setIntakeOptions] = useState<string[]>([]);
+  const [degreeOptions, setDegreeOptions] = useState<string[]>([]);
+  const [programOptions, setProgramOptions] = useState<string[]>([]);
+  const [filterAgents, setFilterAgents] = useState<string[]>([]);
 
   const loadEmployee = useCallback(async () => {
     const { data: auth } = await supabase.auth.getUser();
@@ -306,11 +311,97 @@ export default function BoardModule({
   }, [loadRows]);
 
   useEffect(() => {
-    void supabase
-      .from("universities")
-      .select("id, university_name")
-      .order("university_name")
-      .then(({ data }) => setUniversities(data || []));
+    async function loadFilterOptions() {
+      const [
+        universityResult,
+        studentResult,
+        applicationResult,
+        employeeResult,
+      ] = await Promise.all([
+        supabase
+          .from("universities")
+          .select("id, university_name")
+          .order("university_name"),
+
+        supabase
+          .from("students")
+          .select("nationality")
+          .not("nationality", "is", null)
+          .range(0, 9999),
+
+        supabase
+          .from("applications")
+          .select("intake, degree_level, program_name")
+          .range(0, 9999),
+
+        // Include inactive agents too, so historical applications remain filterable.
+        supabase
+          .from("employees")
+          .select("full_name")
+          .eq("role", "agent")
+          .not("full_name", "is", null)
+          .order("full_name"),
+      ]);
+
+      if (universityResult.error) {
+        setMessage(universityResult.error.message);
+      } else {
+        setUniversities(universityResult.data || []);
+      }
+
+      if (studentResult.error) {
+        setMessage(studentResult.error.message);
+      } else {
+        setNationalityOptions(
+          [...new Set(
+            (studentResult.data || [])
+              .map((item: any) => item.nationality?.trim())
+              .filter((value): value is string => Boolean(value))
+          )].sort((a, b) => a.localeCompare(b))
+        );
+      }
+
+      if (applicationResult.error) {
+        setMessage(applicationResult.error.message);
+      } else {
+        const applications = applicationResult.data || [];
+
+        setIntakeOptions(
+          [...new Set(
+            applications.map((item: any) => item.intake?.trim())
+              .filter((value): value is string => Boolean(value))
+          )].sort((a, b) => a.localeCompare(b))
+        );
+
+        setDegreeOptions(
+          [...new Set(
+            applications.map((item: any) => item.degree_level?.trim())
+              .filter((value): value is string => Boolean(value))
+          )].sort((a, b) => a.localeCompare(b))
+        );
+
+        setProgramOptions(
+          [...new Set(
+            applications.map((item: any) => item.program_name?.trim())
+              .filter((value): value is string => Boolean(value))
+          )].sort((a, b) => a.localeCompare(b))
+        );
+      }
+
+      if (employeeResult.error) {
+        setMessage(employeeResult.error.message);
+      } else {
+        setFilterAgents(
+          [...new Set(
+            (employeeResult.data || [])
+              .map((item: any) => item.full_name?.trim())
+              .filter((value): value is string => Boolean(value))
+          )].sort((a, b) => a.localeCompare(b))
+        );
+      }
+    }
+
+    void loadFilterOptions();
   }, []);
 
   const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
@@ -657,12 +748,7 @@ export default function BoardModule({
             [
               ["studentName", "Student Name", "text"],
               ["passport", "Passport", "text"],
-              ["nationality", "Nationality", "text"],
               ["email", "Email", "text"],
-              ["intake", "Intake", "text"],
-              ["university", "University", "text"],
-              ["degree", "Degree", "text"],
-              ["program", "Program", "text"],
               ["fromDate", "From Date", "date"],
               ["toDate", "To Date", "date"],
             ] as [keyof Filters, string, string][]
@@ -682,6 +768,78 @@ export default function BoardModule({
           ))}
 
           <label className="grid min-w-0 grid-cols-[78px_minmax(0,1fr)] items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-2 py-1">
+            <span className={labelClass}>Nationality</span>
+            <select
+              value={filters.nationality}
+              onChange={(e) => changeFilter("nationality", e.target.value)}
+              className={inputClass}
+            >
+              <option value="">All</option>
+              {nationalityOptions.map((x) => (
+                <option key={x} value={x}>{x}</option>
+              ))}
+            </select>
+          </label>
+
+          <label className="grid min-w-0 grid-cols-[78px_minmax(0,1fr)] items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-2 py-1">
+            <span className={labelClass}>Intake</span>
+            <select
+              value={filters.intake}
+              onChange={(e) => changeFilter("intake", e.target.value)}
+              className={inputClass}
+            >
+              <option value="">All</option>
+              {intakeOptions.map((x) => (
+                <option key={x} value={x}>{x}</option>
+              ))}
+            </select>
+          </label>
+
+          <label className="grid min-w-0 grid-cols-[78px_minmax(0,1fr)] items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-2 py-1">
+            <span className={labelClass}>University</span>
+            <select
+              value={filters.university}
+              onChange={(e) => changeFilter("university", e.target.value)}
+              className={inputClass}
+            >
+              <option value="">All</option>
+              {universities.map((u) => (
+                <option key={u.id} value={u.university_name}>
+                  {u.university_name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="grid min-w-0 grid-cols-[78px_minmax(0,1fr)] items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-2 py-1">
+            <span className={labelClass}>Degree</span>
+            <select
+              value={filters.degree}
+              onChange={(e) => changeFilter("degree", e.target.value)}
+              className={inputClass}
+            >
+              <option value="">All</option>
+              {degreeOptions.map((x) => (
+                <option key={x} value={x}>{x}</option>
+              ))}
+            </select>
+          </label>
+
+          <label className="grid min-w-0 grid-cols-[78px_minmax(0,1fr)] items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-2 py-1">
+            <span className={labelClass}>Program</span>
+            <select
+              value={filters.program}
+              onChange={(e) => changeFilter("program", e.target.value)}
+              className={inputClass}
+            >
+              <option value="">All</option>
+              {programOptions.map((x) => (
+                <option key={x} value={x}>{x}</option>
+              ))}
+            </select>
+          </label>
+
+          <label className="grid min-w-0 grid-cols-[78px_minmax(0,1fr)] items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-2 py-1">
             <span className={labelClass}>Payment Status</span>
             <select
               value={filters.payment}
@@ -690,7 +848,7 @@ export default function BoardModule({
             >
               <option value="">All</option>
               {PAYMENT_OPTIONS.map((x) => (
-                <option key={x}>{x}</option>
+                <option key={x} value={x}>{x}</option>
               ))}
             </select>
           </label>
@@ -704,23 +862,31 @@ export default function BoardModule({
             >
               <option value="">All</option>
               {PRIORITY_OPTIONS.map((x) => (
-                <option key={x}>{x}</option>
+                <option key={x} value={x}>{x}</option>
               ))}
             </select>
           </label>
 
           <label className="grid min-w-0 grid-cols-[78px_minmax(0,1fr)] items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-2 py-1">
             <span className={labelClass}>Agent</span>
-            <input
+            <select
               value={filters.agent}
               onChange={(e) => changeFilter("agent", e.target.value)}
               className={inputClass}
-            />
+            >
+              <option value="">All</option>
+              {filterAgents.map((x) => (
+                <option key={x} value={x}>{x}</option>
+              ))}
+            </select>
           </label>
 
-          <div className="flex items-end gap-2 sm:col-span-2 sm:col-span-2 xl:col-span-2 xl:justify-end">
+          <div className="flex items-end gap-2 sm:col-span-2 xl:col-span-2 xl:justify-end">
             <button
-              onClick={() => setAppliedFilters({ ...filters })}
+              onClick={() => {
+                setPage(1);
+                setAppliedFilters({ ...filters });
+              }}
               className="min-w-28 rounded-md border border-slate-300 bg-white px-5 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100"
             >
               Search
@@ -730,6 +896,7 @@ export default function BoardModule({
               onClick={() => {
                 setFilters({ ...EMPTY_FILTERS });
                 setAppliedFilters({ ...EMPTY_FILTERS });
+                setPage(1);
               }}
               className="min-w-28 rounded-lg bg-rose-500 px-6 py-2 text-[14px] font-bold tracking-wide text-white shadow-sm transition hover:bg-rose-600"
             >
