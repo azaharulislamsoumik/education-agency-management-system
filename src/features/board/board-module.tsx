@@ -606,7 +606,7 @@ export default function BoardModule({
           university_id: form.university_id,
           degree_level: form.degree_level,
           program_name: form.program_name,
-          payment: form.payment,
+          payment: "Unpaid",
           priority: form.priority,
           application_status: "Pending",
           applied_date: new Date().toISOString().slice(0, 10),
@@ -930,6 +930,7 @@ export default function BoardModule({
                   "Payment",
                   "Agent",
                   "Responsible Person",
+                  "Status",
                   "Action",
                 ].map((h) => (
                   <th
@@ -945,7 +946,7 @@ export default function BoardModule({
             <tbody>
               {loading && (
                 <tr>
-                  <td colSpan={13} className="py-8 text-slate-400">
+                  <td colSpan={14} className="py-8 text-slate-400">
                     Loading applications...
                   </td>
                 </tr>
@@ -1002,22 +1003,7 @@ export default function BoardModule({
                     </td>
 
                     <td className="border border-slate-200 px-1.5 py-1">
-                      <select
-                        value={a.payment || ""}
-                        onChange={(e) =>
-                          void updateApplication(
-                            a.id,
-                            "payment",
-                            e.target.value
-                          )
-                        }
-                        className="w-full bg-transparent"
-                      >
-                        <option value="">—</option>
-                        {PAYMENT_OPTIONS.map((x) => (
-                          <option key={x}>{x}</option>
-                        ))}
-                      </select>
+                      {a.payment || "Unpaid"}
                     </td>
 
                     <td className="border border-slate-200 px-1.5 py-1">
@@ -1026,6 +1012,25 @@ export default function BoardModule({
 
                     <td className="border border-slate-200 px-1.5 py-1">
                       {a.responsible_person || "—"}
+                    </td>
+
+                    <td className="border border-slate-200 px-1.5 py-1">
+                      <select
+                        aria-label="Application status"
+                        value={a.application_status || "Pending"}
+                        onChange={(e) =>
+                          void updateApplication(
+                            a.id,
+                            "application_status",
+                            e.target.value
+                          )
+                        }
+                        className="max-w-[150px] rounded border border-slate-200 bg-white px-1 py-0.5 text-indigo-700"
+                      >
+                        {STATUS_OPTIONS.map((x) => (
+                          <option key={x} value={x}>{x}</option>
+                        ))}
+                      </select>
                     </td>
 
                     <td className="border border-slate-200 px-1.5 py-1">
@@ -1044,24 +1049,6 @@ export default function BoardModule({
                           Log
                         </button>
 
-                        <select
-                          aria-label="Application status"
-                          value={a.application_status || "Pending"}
-                          onChange={(e) =>
-                            void updateApplication(
-                              a.id,
-                              "application_status",
-                              e.target.value
-                            )
-                          }
-                          className="max-w-[105px] rounded border border-slate-200 bg-white px-1 py-0.5 text-indigo-700"
-                        >
-                          <option value="">Status</option>
-                          {STATUS_OPTIONS.map((x) => (
-                            <option key={x}>{x}</option>
-                          ))}
-                        </select>
-
                         <button
                           disabled={saving}
                           onClick={() => void handleDone(a)}
@@ -1076,7 +1063,7 @@ export default function BoardModule({
 
               {!loading && visibleRows.length === 0 && (
                 <tr>
-                  <td colSpan={13} className="py-10 text-slate-400">
+                  <td colSpan={14} className="py-10 text-slate-400">
                     No applications found.
                   </td>
                 </tr>
@@ -1317,20 +1304,6 @@ export default function BoardModule({
                 />
               </label>
 
-              <label>
-                <span className={labelClass}>Payment *</span>
-                <select
-                  value={form.payment}
-                  onChange={(e) =>
-                    setForm((o) => ({ ...o, payment: e.target.value }))
-                  }
-                  className={inputClass}
-                >
-                  {PAYMENT_OPTIONS.map((x) => (
-                    <option key={x}>{x}</option>
-                  ))}
-                </select>
-              </label>
             </div>
 
             <div className="mt-5 flex justify-center gap-3">
