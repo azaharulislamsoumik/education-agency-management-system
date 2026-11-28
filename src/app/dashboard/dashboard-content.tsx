@@ -320,6 +320,7 @@ export default function DashboardContent() {
   const [mobileMenu, setMobileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [studentModuleKey, setStudentModuleKey] = useState(0);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
 
   // Restore the selected page from the URL after refresh.
   useEffect(() => {
@@ -388,11 +389,22 @@ function selectModule(label: string) {
   setExpandedMenus([]);
 
   if (label === "Students") {
+    setSelectedStudentId(null);
     setStudentModuleKey((key) => key + 1);
   }
 
   setMobileMenu(false);
 }
+
+  function openStudentFromBoard(studentId: string) {
+    setSelectedStudentId(studentId);
+    updateNavigationUrl("Students");
+    setActiveModule("Students");
+    setActiveChild("");
+    setExpandedMenus([]);
+    setStudentModuleKey((key) => key + 1);
+    setMobileMenu(false);
+  }
 
   function selectChild(parent: string, child: string) {
     updateNavigationUrl(parent, child);
@@ -595,9 +607,9 @@ function selectModule(label: string) {
               </section>
             </div>
           ) : activeModule === "Board" && ["Pending", "Apply", "Document Review", "Submit", "Completed", "Hold"].includes(activeChild) ? (
-            <BoardModule statusFilter={activeChild} />
+            <BoardModule statusFilter={activeChild} onViewStudent={openStudentFromBoard} />
           ) : activeModule === "Students" && !activeChild ? (
-  <StudentModule key={studentModuleKey} />
+  <StudentModule key={studentModuleKey} openStudentId={selectedStudentId} />
 ) : activeModule === "University" && activeChild === "University Details" ? (
   <UniversityModule />
 ) : activeModule === "University" && activeChild === "Offers" ? (
