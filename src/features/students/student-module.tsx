@@ -129,7 +129,11 @@ const EMPTY_FILTERS: FilterState = {
   agent: "",
 };
 
-export default function StudentModule() {
+export default function StudentModule({
+  openStudentId = null,
+}: {
+  openStudentId?: string | null;
+}) {
   const [students, setStudents] = useState<any[]>([]);
   const [agents, setAgents] = useState<any[]>([]);
   const [employee, setEmployee] = useState<any>(null);
@@ -189,6 +193,12 @@ const [savingApplication, setSavingApplication] = useState(false);
   useEffect(() => {
     initialize();
   }, []);
+
+  useEffect(() => {
+    if (!loading && openStudentId) {
+      void openStudent({ id: openStudentId });
+    }
+  }, [loading, openStudentId]);
 
   useEffect(() => {
     if (!loading && screen === "list") {

@@ -8,6 +8,7 @@ import StudentRegistrationModal from "@/components/public-website/student-regist
 
 export default function Home() {
   const router = useRouter();
+  const currentYear = 2026;
 
   const [loginOpen, setLoginOpen] = useState(false);
   const [registrationOpen, setRegistrationOpen] = useState(false);
@@ -422,7 +423,7 @@ router.refresh();
           </div>
 
           <p className="text-sm text-slate-400">
-            © {new Date().getFullYear()} Edunexio. All rights reserved.
+            © {currentYear} Edunexio. All rights reserved.
           </p>
         </div>
       </footer>
@@ -540,7 +541,7 @@ router.refresh();
             </form>
 
             <p className="mt-7 text-center text-xs text-slate-400">
-              © {new Date().getFullYear()} Edunexio. All rights reserved.
+              © {currentYear} Edunexio. All rights reserved.
             </p>
           </div>
         </div>
