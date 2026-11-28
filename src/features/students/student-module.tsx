@@ -560,10 +560,7 @@ if (employee?.role === "agent") {
     });
     setApplications([]);
     setEditingApplicationId(null);
-setApplicationDraft({
-  payment: "",
-  application_status: "",
-});
+    setApplicationDraft({ payment: "", application_status: "" });
     setDocuments([]);
     setLogs([]);
     setPhotoFile(null);
@@ -597,10 +594,7 @@ setApplicationDraft({
 
     setSelected(fullStudent);
     setEditingApplicationId(null);
-setApplicationDraft({
-  payment: "",
-  application_status: "",
-});
+    setApplicationDraft({ payment: "", application_status: "" });
     setStudent({ ...EMPTY_STUDENT, ...fullStudent });
     setPhotoFile(null);
     setSignatureFile(null);
@@ -630,10 +624,7 @@ setApplicationDraft({
 
     setSelected(fullStudent);
     setEditingApplicationId(null);
-setApplicationDraft({
-  payment: "",
-  application_status: "",
-});
+    setApplicationDraft({ payment: "", application_status: "" });
     setStudent({ ...EMPTY_STUDENT, ...fullStudent });
     setNoteText(fullStudent.student_notes || "");
 
@@ -1245,350 +1236,192 @@ function cancelApplicationEdit() {
 async function saveApplicationEdit(a: any) {
   if (!a?.id || savingApplication) return;
 
-  setSavingApplication(true);
-  setMessage("");
-
-  const { error } = await supabase
-    .from("applications")
-    .update({
-      payment: applicationDraft.payment || null,
-      application_status: applicationDraft.application_status,
-    })
-    .eq("id", a.id);
-
-  if (error) {
-    setMessage(error.message);
-    setSavingApplication(false);
+  if (!applicationDraft.application_status.trim()) {
+    setMessage("Please select an application status.");
     return;
   }
 
-  setApplications((old) =>
-    old.map((item) =>
-      item.id === a.id
-        ? {
-            ...item,
-            payment: applicationDraft.payment,
-            application_status: applicationDraft.application_status,
-          }
-        : item
-    )
-  );
+  setSavingApplication(true);
+  setMessage("");
 
-  await addLog(
-    selected.id,
-    "Application Updated",
-    `Application payment: ${a.payment || "—"} → ${applicationDraft.payment || "—"}; Status: ${a.application_status || "—"} → ${applicationDraft.application_status}`
-  );
+  try {
+    const { data, error } = await supabase
+      .from("applications")
+      .update({
+        payment: applicationDraft.payment || null,
+        application_status: applicationDraft.application_status,
+      })
+      .eq("id", a.id)
+      .select("id")
+      .single();
 
-  setEditingApplicationId(null);
-  setMessage("Application updated successfully.");
-  setSavingApplication(false);
+    if (error) throw error;
+    if (!data?.id) throw new Error("Application was not updated. Please check your access permissions.");
+
+    setApplications((old) =>
+      old.map((item) =>
+        item.id === a.id
+          ? {
+              ...item,
+              payment: applicationDraft.payment,
+              application_status: applicationDraft.application_status,
+            }
+          : item
+      )
+    );
+
+    if (selected?.id) {
+      await addLog(
+        selected.id,
+        "Application Updated",
+        `Application payment: ${a.payment || "—"} → ${applicationDraft.payment || "—"}; Status: ${a.application_status || "—"} → ${applicationDraft.application_status}`
+      );
+    }
+
+    setEditingApplicationId(null);
+    setMessage("Application updated successfully.");
+  } catch (error: any) {
+    setMessage(error.message || "Unable to update this application.");
+  } finally {
+    setSavingApplication(false);
+  }
 }
-  
-function renderApplicationTable(readOnly: boolean) {
-  return (
-    <section className="overflow-hidden border border-slate-300 bg-white">
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[1000px] border-collapse text-center text-[10px]">
-          <thead className="bg-[#fce8e8]">
-            <tr>
-              {[
-                "S.N.",
-                "Intake",
-                "University",
-                "Major",
-                "Priority",
-                "Payment",
-                "Applied Date",
-                "Responsible Person",
-                "Current Status",
-                "Actions",
-              ].map((heading) => (
-                <th
-                  key={heading}
-                  className="border border-slate-400 px-1 py-1 font-bold"
-                >
-                  {heading}
-                </th>
-              ))}
-            </tr>
-          </thead>
+  function renderApplicationTable() {
+    return (
+      <section className="overflow-hidden border border-slate-300 bg-white">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[1000px] border-collapse text-center text-[10px]">
+            <thead className="bg-[#fce8e8]">
+              <tr>
+                {[
+                  "S.N.",
+                  "Intake",
+                  "University",
+                  "Major",
+                  "Priority",
+                  "Payment",
+                  "Applied Date",
+                  "Responsible Person",
+                  "Current Status",
+                  "Actions",
+                ].map((heading) => (
+                  <th key={heading} className="border border-slate-400 px-1 py-1 font-bold">
+                    {heading}
+                  </th>
+                ))}
+              </tr>
+            </thead>
 
-          <tbody>
-            {applications.map((a, i) => {
-              const isEditing = editingApplicationId === a.id;
+            <tbody>
+              {applications.map((a, i) => {
+                const isEditing = editingApplicationId === a.id;
+                return (
+                  <tr key={a.id} className="h-7">
+                    <td className="border border-slate-300 px-1">{String(i + 1).padStart(2, "0")}</td>
+                    <td className="border border-slate-300 px-1">{a.intake || "—"}</td>
+                    <td className="border border-slate-300 px-1">{a.university_name || "—"}</td>
+                    <td className="border border-slate-300 px-1">{a.program_name || "—"}</td>
+                    <td className="border border-slate-300 px-1">{a.priority || "—"}</td>
 
-              return (
-                <tr key={a.id} className="h-7">
-                  <td className="border border-slate-300 px-1">
-                    {String(i + 1).padStart(2, "0")}
-                  </td>
+                    <td className="border border-slate-300 px-1">
+                      {isEditing ? (
+                        <select
+                          value={applicationDraft.payment}
+                          disabled={savingApplication}
+                          onChange={(e) => setApplicationDraft((old) => ({ ...old, payment: e.target.value }))}
+                          className="w-full rounded border border-slate-300 bg-white px-1 py-1 text-[10px]"
+                        >
+                          <option value="">Select</option>
+                          {["Paid", "Unpaid", "Partial"].map((option) => (
+                            <option key={option} value={option}>{option}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        a.payment || "—"
+                      )}
+                    </td>
 
-                  <td className="border border-slate-300 px-1">
-                    {a.intake || "—"}
-                  </td>
+                    <td className="border border-slate-300 px-1">{a.applied_date || "—"}</td>
+                    <td className="border border-slate-300 px-1">{a.responsible_person || "—"}</td>
 
-                  <td className="border border-slate-300 px-1">
-                    {a.university_name || "—"}
-                  </td>
-
-                  <td className="border border-slate-300 px-1">
-                    {a.program_name || "—"}
-                  </td>
-
-                  <td className="border border-slate-300 px-1">
-                    {a.priority || "—"}
-                  </td>
-
-                  {/* Payment */}
-                  <td className="border border-slate-300 px-1">
-                    {isEditing && !readOnly ? (
-                      <select
-                        value={applicationDraft.payment}
-                        onChange={(e) =>
-                          setApplicationDraft((old) => ({
-                            ...old,
-                            payment: e.target.value,
-                          }))
-                        }
-                        className="w-full rounded border border-blue-400 bg-white px-1 py-1 text-[10px]"
-                      >
-                        <option value="">Select</option>
-                        {["Paid", "Unpaid", "Partial"].map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      a.payment || "—"
-                    )}
-                  </td>
-
-                  <td className="border border-slate-300 px-1">
-                    {a.applied_date || "—"}
-                  </td>
-
-                  <td className="border border-slate-300 px-1">
-                    {a.responsible_person || "—"}
-                  </td>
-
-                  {/* Current Status */}
-                  <td className="border border-slate-300 px-1">
-                    {isEditing && !readOnly ? (
-                      <select
-                        value={applicationDraft.application_status}
-                        onChange={(e) =>
-                          setApplicationDraft((old) => ({
-                            ...old,
-                            application_status: e.target.value,
-                          }))
-                        }
-                        className="w-full rounded border border-blue-400 bg-white px-1 py-1 text-[10px]"
-                      >
-                        <option value="">Select Status</option>
-
-                        {APPLICATION_STATUSES.map((status) => (
-                          <option key={status} value={status}>
-                            {status}
-                          </option>
-                        ))}
-
-                        {a.application_status &&
-                          !APPLICATION_STATUSES.includes(
-                            a.application_status as (typeof APPLICATION_STATUSES)[number]
-                          ) && (
-                            <option value={a.application_status}>
-                              {a.application_status}
-                            </option>
+                    <td className="border border-slate-300 px-1">
+                      {isEditing ? (
+                        <select
+                          value={applicationDraft.application_status}
+                          disabled={savingApplication}
+                          onChange={(e) => setApplicationDraft((old) => ({ ...old, application_status: e.target.value }))}
+                          className="w-full rounded border border-slate-300 bg-white px-1 py-1 text-[10px]"
+                        >
+                          {a.application_status && !APPLICATION_STATUSES.includes(a.application_status as (typeof APPLICATION_STATUSES)[number]) && (
+                            <option value={a.application_status}>{a.application_status}</option>
                           )}
-                      </select>
-                    ) : (
-                      a.application_status || "—"
-                    )}
-                  </td>
+                          {APPLICATION_STATUSES.map((status) => (
+                            <option key={status} value={status}>{status}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        a.application_status || "—"
+                      )}
+                    </td>
 
-                  {/* Actions */}
-                  <td className="border border-slate-300 px-1">
-                    {selected?.id ? (
+                    <td className="border border-slate-300 px-1">
                       <div className="flex justify-center gap-1 whitespace-nowrap">
-                        <button
-                          type="button"
-                          onClick={() => openNotesPopup(selected)}
-                          className="text-blue-700 underline"
-                        >
-                          Note
-                        </button>
-
-                        <span>.</span>
-
-                        <button
-                          type="button"
-                          onClick={() => openLogPopup(selected)}
-                          className="text-blue-700 underline"
-                        >
-                          Log
-                        </button>
-
-                        <span>.</span>
-
-                        {!readOnly && isEditing ? (
+                        {isEditing ? (
                           <>
                             <button
                               type="button"
                               disabled={savingApplication}
-                              onClick={() => saveApplicationEdit(a)}
-                              className="font-semibold text-emerald-700 underline disabled:opacity-50"
+                              onClick={() => void saveApplicationEdit(a)}
+                              className="text-emerald-700 underline disabled:opacity-50"
                             >
                               {savingApplication ? "Saving..." : "Save"}
                             </button>
-
                             <span>.</span>
-
                             <button
                               type="button"
                               disabled={savingApplication}
                               onClick={cancelApplicationEdit}
-                              className="text-red-600 underline disabled:opacity-50"
+                              className="text-slate-600 underline disabled:opacity-50"
                             >
                               Cancel
                             </button>
                           </>
-                        ) : !readOnly ? (
-                          <button
-                            type="button"
-                            onClick={() => startApplicationEdit(a)}
-                            disabled={!!editingApplicationId}
-                            className="text-blue-700 underline disabled:cursor-not-allowed disabled:opacity-40"
-                          >
-                            Edit
-                          </button>
                         ) : (
-                          <span className="text-slate-400">—</span>
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => openNotesPopup(selected)}
+                              className="text-blue-700 underline"
+                            >
+                              Note
+                            </button>
+                            <span>.</span>
+                            <button
+                              type="button"
+                              onClick={() => openLogPopup(selected)}
+                              className="text-blue-700 underline"
+                            >
+                              Log
+                            </button>
+                            <span>.</span>
+                            <button
+                              type="button"
+                              onClick={() => startApplicationEdit(a)}
+                              className="text-blue-700 underline"
+                            >
+                              Edit
+                            </button>
+                          </>
                         )}
                       </div>
-                    ) : (
-                      "—"
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-
-            {applications.length === 0 && (
-              <tr>
-                <td
-                  colSpan={10}
-                  className="h-12 border border-slate-300 text-center text-slate-400"
-                >
-                  No university applications found for this student.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  );
-}
-  
-</td>
-
-                  <td className="border border-slate-300 px-1">
-                    {a.applied_date || "—"}
-                  </td>
-                  <td className="border border-slate-300 px-1">
-                    {a.responsible_person || "—"}
-                  </td>
-                  
-<td className="border border-slate-300 px-1">
-  {readOnly ? (
-    a.application_status || "—"
-  ) : (
-    <select
-      value={a.application_status || ""}
-      onChange={async (e) => {
-        const newStatus = e.target.value;
-
-        const { error } = await supabase
-          .from("applications")
-          .update({ application_status: newStatus })
-          .eq("id", a.id);
-
-        if (error) {
-          setMessage(error.message);
-          return;
-        }
-
-        setApplications((old) =>
-          old.map((item) =>
-            item.id === a.id
-              ? { ...item, application_status: newStatus }
-              : item
-          )
-        );
-
-        setMessage("Application status updated successfully.");
-      }}
-      className="w-full rounded border border-slate-300 bg-white px-1 py-1 text-[10px]"
-    >
-      {APPLICATION_STATUSES.map((status) => (
-  <option key={status} value={status}>
-    {status}
-  </option>
-))}
-      {a.application_status &&
-        !APPLICATION_STATUSES.includes(
-  a.application_status as (typeof APPLICATION_STATUSES)[number]
-) && (
-          <option value={a.application_status}>
-            {a.application_status}
-          </option>
-        )}
-    </select>
-  )}
-</td>
-
-                  <td className="border border-slate-300 px-1">
-                    {selected?.id ? (
-                      <div className="flex justify-center gap-1 whitespace-nowrap">
-                        <button
-                          type="button"
-                          onClick={() => openNotesPopup(selected)}
-                          className="text-blue-700 underline"
-                        >
-                          Note
-                        </button>
-                        <span>.</span>
-                        <button
-                          type="button"
-                          onClick={() => openLogPopup(selected)}
-                          className="text-blue-700 underline"
-                        >
-                          Log
-                        </button>
-                        <span>.</span>
-                        <button
-                          type="button"
-                          onClick={() => openEditStudent(selected)}
-                          className="text-blue-700 underline"
-                        >
-                          Edit
-                        </button>
-                      </div>
-                    ) : (
-                      "—"
-                    )}
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                  </tr>
+                );
+              })}
 
               {applications.length === 0 && (
                 <tr>
-                  <td
-                    colSpan={10}
-                    className="h-12 border border-slate-300 text-center text-slate-400"
-                  >
+                  <td colSpan={10} className="h-12 border border-slate-300 text-center text-slate-400">
                     No university applications found for this student.
                   </td>
                 </tr>
@@ -2063,7 +1896,7 @@ function renderApplicationTable(readOnly: boolean) {
         <form onSubmit={saveStudent} className="space-y-3">
           {/* University Application Table and Profile */}
           <div className="grid grid-cols-1 gap-2 border-2 border-[#22c55e] rounded-xl md:grid-cols-[minmax(0,1fr)_130px]">
-            <div>{renderApplicationTable(readOnly)}</div>
+            <div>{renderApplicationTable()}</div>
             {renderProfileUpload(readOnly)}
           </div>
 
