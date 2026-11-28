@@ -1413,10 +1413,6 @@ export default function UniversityModule() {
                     onChange={(e) => updateForm("password", e.target.value)}
                     placeholder="Enter university portal password"
                     className={inputClass}
-<<<<<<< HEAD
-                  
-=======
->>>>>>> origin/main
                   />
 
                   <button
