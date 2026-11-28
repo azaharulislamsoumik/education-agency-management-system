@@ -5,7 +5,21 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react
 import { supabase } from "@/lib/supabase";
 import { APPLICATION_STATUSES } from "@/lib/application-statuses";
 
-const STATUS_OPTIONS = APPLICATION_STATUSES;
+const STATUS_ORDER = [
+  "Pending",
+  "Document Review",
+  "Apply",
+  "Submit",
+  "Completed",
+];
+const STATUS_OPTIONS = [...APPLICATION_STATUSES].sort((a, b) => {
+  const aIndex = STATUS_ORDER.indexOf(a);
+  const bIndex = STATUS_ORDER.indexOf(b);
+  if (aIndex === -1 && bIndex === -1) return 0;
+  if (aIndex === -1) return 1;
+  if (bIndex === -1) return -1;
+  return aIndex - bIndex;
+});
 const PAYMENT_OPTIONS = ["Unpaid", "Paid", "Partial"];
 const PRIORITY_OPTIONS = ["Normal", "Urgent", "In-China"];
 
