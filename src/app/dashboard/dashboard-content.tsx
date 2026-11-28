@@ -7,7 +7,14 @@ import BoardModule from "@/features/board/board-module";
 import UniversityModule from "@/features/university/university-details/university-module";
 import OffersModule from "@/features/university/offers/offers-module";
 
-const BOARD_SECTIONS = ["Pending", "Apply", "Document Review", "Submit", "Completed", "Hold"] as const;
+const BOARD_SECTIONS = [
+  "Pending",
+  "Document Review",
+  "Apply",
+  "Submit",
+  "Completed",
+  "Hold",
+] as const;
 
 type MenuItem = {
   label: string;
@@ -52,8 +59,8 @@ const menuItems: MenuItem[] = [
 
 const statusData = [
   { label: "Pending", value: 124, color: "#f59e0b", dot: "bg-amber-500" },
-  { label: "Apply", value: 286, color: "#3b82f6", dot: "bg-blue-500" },
   { label: "Document Review", value: 95, color: "#8b5cf6", dot: "bg-violet-500" },
+  { label: "Apply", value: 286, color: "#3b82f6", dot: "bg-blue-500" },
   { label: "Submit", value: 218, color: "#6366f1", dot: "bg-indigo-500" },
   { label: "Completed", value: 168, color: "#10b981", dot: "bg-emerald-500" },
   { label: "Hold", value: 84, color: "#f43f5e", dot: "bg-rose-500" },
